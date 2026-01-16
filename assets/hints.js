@@ -33,12 +33,30 @@
 
     // Backdrop (click outside -> close)
     const backdrop = el("div", "hint-backdrop", { hidden: "" });
-    backdrop.addEventListener("click", (e) => {
+    backdrop.addEventListener("pointerdown", (e) => {
+      // ja klikšķis tieši uz backdrop (nevis uz karti) -> close
       if (e.target === backdrop) close();
     });
 
     // Stack container
     const stack = el("div", "hint-stack", { "aria-label": "Padomi" });
+
+    // Globāls "click outside" drošības tīkls
+    document.addEventListener("pointerdown", (e) => {
+      if (state.activeIndex == null) return;
+
+      const openCard = state.cards[state.activeIndex];
+      if (!openCard) return;
+
+      // ja klikšķis ir uz atvērtās kartes (vai tās iekšā), neaizveram
+      if (openCard.contains(e.target)) return;
+
+      // ja klikšķis ir uz hint stack (cita kārts), ļaujam open() pārslēgt
+      if (state.stackEl && state.stackEl.contains(e.target)) return;
+
+      // citur — aizver
+      close();
+    });
 
     const makeCard = (i) => {
       const btn = el("button", `hint-card hc-${i + 1}`, {
@@ -62,7 +80,7 @@
       btn.appendChild(inner);
 
       btn.addEventListener("click", (e) => {
-        e.stopPropagation(); // ļoti svarīgi: lai disks neuzķeras
+        e.stopPropagation(); // lai disks neuzķeras
         open(i);
       });
 
@@ -116,14 +134,15 @@
   function open(i) {
     if (!state.mounted) return;
 
-    // ja jau atvērts — pārslēdz
+    // ja jau atvērts — nedaram neko
     if (state.activeIndex === i) return;
 
-    close(false); // aizver iepriekšējo, bet neatmet animāciju
+    close(false);
 
     state.activeIndex = i;
 
-    state.backdropEl.hidden = true;
+    // ✅ ATVEROT – parādām backdrop
+    state.backdropEl.hidden = false;
 
     const card = state.cards[i];
     if (card) {
@@ -140,6 +159,7 @@
       c.setAttribute("aria-expanded", "false");
     });
 
+    // ✅ AIZVEROT – paslēpjam backdrop
     state.backdropEl.hidden = true;
 
     if (resetActive) state.activeIndex = null;
@@ -152,7 +172,6 @@
   }
 
   function setHints(hintsArray) {
-    // sagaidām 3 gab; ja mazāk — piepildām
     const arr = Array.isArray(hintsArray) ? hintsArray.slice(0) : [];
     while (arr.length < 3) arr.push({ title: `Padoms ${arr.length + 1}`, text: "" });
 
