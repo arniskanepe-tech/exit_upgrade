@@ -379,6 +379,12 @@ html,body{
   cursor: default;
 }
 
+/* Kad uzbrauc / fokusē kārti – pacel virs pārējām */
+.hint-card:hover,
+.hint-card:focus-visible{
+  z-index: 10;
+}
+
 /* kad atvērta, nerotējam */
 .hint-card.is-open:hover{
   transform: translate(-50%, -50%) !important;
