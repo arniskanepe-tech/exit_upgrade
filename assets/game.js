@@ -20,10 +20,10 @@
       cardHtml: `
         <p>Kas par fantastisku Gadu Secību bijusi.</p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
-      `,hint1: "Padoms #1 (L1) — paskaties uz GADU secību.",
+      `,
+      hint1: "Padoms #1 (L1) — paskaties uz GADU secību.",
       hint2: "Padoms #2 (L1) — cipari ir tieši 3 un tie ir redzami vienā līnijā.",
       hint3: "Padoms #3 (L1) — uzgriez līdz MĒRĶA simbolam.",
-    
     },
     {
       id: 2,
@@ -34,10 +34,10 @@
       cardHtml: `
         <p>Steady, Dress up, Go!</p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
-      `,hint1: "",
+      `,
+      hint1: "",
       hint2: "",
       hint3: "",
-    
     },
     {
       id: 3,
@@ -48,10 +48,10 @@
       cardHtml: `
         <p></p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
-      `,hint1: "",
+      `,
+      hint1: "",
       hint2: "",
       hint3: "",
-    
     },
     {
       id: 4,
@@ -62,10 +62,10 @@
       cardHtml: `
         <p></p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
-      `,hint1: "",
+      `,
+      hint1: "",
       hint2: "",
       hint3: "",
-    
     },
     {
       id: 5,
@@ -76,10 +76,10 @@
       cardHtml: `
           <p></p>
           <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
-      `,hint1: "",
+      `,
+      hint1: "",
       hint2: "",
       hint3: "",
-    
     },
   ];
 
@@ -109,15 +109,6 @@
   const targetSymbolLabel = document.getElementById("targetSymbolLabel");
   const taskCard = document.getElementById("taskCard");
 
-  // ===== HINT KĀRTIS =====
-  const hintStack = document.getElementById("hintStack");
-  const hintButtons = hintStack ? Array.from(hintStack.querySelectorAll("[data-hint]")) : [];
-  const hintOverlay = document.getElementById("hintOverlay");
-  const hintModalTitle = document.getElementById("hintModalTitle");
-  const hintModalBody = document.getElementById("hintModalBody");
-  const hintClose = document.getElementById("hintClose");
-
-
   const nextBtn = document.getElementById("nextBtn");
 
   // ===== Welcome elements =====
@@ -125,6 +116,8 @@
   const welcomeTitle = document.getElementById("welcomeTitle");
   const welcomeInput = document.getElementById("welcomeInput");
   const welcomeHint = document.getElementById("welcomeHint");
+
+  const resultMsg = document.getElementById("resultMsg");
 
   function normalize(s){
     return (s || "").trim().toLowerCase();
@@ -191,8 +184,6 @@
     setTimeout(() => welcomeInput.focus(), 0);
   }
 
-  const resultMsg = document.getElementById("resultMsg");
-
   // ============ Disks ============
   const disk = window.DiskGameDisk.create({
     canvas,
@@ -228,6 +219,7 @@
 
     // nodrošinām tieši 3 gab.
     while (arr.length < 3) arr.push({ text: "" });
+
     return arr.slice(0,3).map((h, idx) => ({
       title: h.title || `Padoms ${idx+1}`,
       text: h.text || ""
@@ -236,23 +228,14 @@
 
   function setHintsForLevel(lvl){
     currentHints = normalizeHints(lvl);
-  }
 
-  function openHint(i){
-    if (!hintOverlay) return;
-    const h = currentHints[i] || { title: `Padoms ${i+1}`, text: "" };
+    // ✅ Nodevām UI uz hints.js
+    if (window.Hints && typeof window.Hints.setHints === "function") {
+      window.Hints.setHints(currentHints);
 
-    hintModalTitle.textContent = h.title || `Padoms ${i+1}`;
-    hintModalBody.textContent = h.text && h.text.trim()
-      ? h.text
-      : "Šim līmenim vēl nav padoma.";
-
-    hintOverlay.hidden = false;
-  }
-
-  function closeHint(){
-    if (!hintOverlay) return;
-    hintOverlay.hidden = true;
+      // drošībai – ja lietotājs bija atvēris kārti un notiek level maiņa
+      if (typeof window.Hints.close === "function") window.Hints.close();
+    }
   }
 
   let isOpen = false;
@@ -313,9 +296,8 @@
 
     const lvl = levels[levelIndex];
 
-    // hints
+    // hints (dati -> UI dara hints.js)
     setHintsForLevel(lvl);
-
 
     // background
     scene.style.backgroundImage = `url("assets/${lvl.background}")`;
@@ -347,29 +329,19 @@
     }
   }
 
+  // ✅ Inicializējam Hints moduli (tas pats uzģenerēs DOM)
+  if (window.Hints && typeof window.Hints.init === "function") {
+    try {
+      window.Hints.init({ mountEl: scene });
+    } catch (e) {
+      // ja kādreiz mount nav pieejams, spēle vienalga strādā bez hintiem
+    }
+  }
+
   // sākuma stāvoklis
   disk.setInteractive(false);
   disk.setInteractive(true);
   setupWelcome();
-
-  // ===== Hint kāršu klikšķi =====
-  if (hintButtons.length){
-    hintButtons.forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const idx = Number(btn.dataset.hint || 0);
-        openHint(idx);
-      });
-    });
-  }
-  if (hintClose) hintClose.addEventListener("click", closeHint);
-  if (hintOverlay){
-    hintOverlay.addEventListener("click", (e) => {
-      // klikšķis ārpus modal aizver
-      if (e.target === hintOverlay) closeHint();
-    });
-  }
-
 
   function openDisk() {
     if (isOpen) return;
