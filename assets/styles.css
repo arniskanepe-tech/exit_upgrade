@@ -404,6 +404,13 @@ html,body{
 
 /* ===== MOBILE FIX: task-card lai vienmēr var tikt pie "Tālāk" ===== */
 @media (max-width: 520px){
+
+  /* mazāks disks centrā uz mobile */
+  :root{
+    --disk-size-active: min(86vw, 420px);
+  }
+
+  /* kartīte kā bottom-sheet pa visu platumu */
   .task-card{
     left: 12px !important;
     right: 12px !important;
@@ -411,14 +418,15 @@ html,body{
 
     bottom: calc(12px + env(safe-area-inset-bottom)) !important;
 
-    /* galvenais: kartīte nedrīkst būt augstāka par ekrānu */
-    max-height: calc(60vh) !important;
-    max-height: calc(60svh) !important;
+    /* kartīte nedrīkst būt augstāka par ekrānu */
+    max-height: 60vh !important;
+    max-height: 60svh !important;
 
     overflow: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
+  /* "Tālāk" vienmēr redzams apakšā kartē */
   .card-actions{
     position: sticky;
     bottom: 0;
@@ -427,10 +435,4 @@ html,body{
     padding-top: 10px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
-@media (max-width: 520px){
-  :root{
-    --disk-size-active: min(86vw, 420px);
-  }
-  }
 }
-
