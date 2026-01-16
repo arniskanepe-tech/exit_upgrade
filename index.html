@@ -3,54 +3,103 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Disku spēle — 1. lapa</title>
+  <title>Disku spēle</title>
+
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
-  <!-- WELCOME / START -->
+  <!-- ===== WELCOME / START ===== -->
   <div id="welcome" class="welcome" aria-label="Sākuma ekrāns">
     <div class="welcome-card">
       <h1 id="welcomeTitle">Čau!</h1>
       <p class="welcome-sub">Ieraksti atbildi, lai sāktu spēli.</p>
-      <input id="welcomeInput" class="welcome-input" maxlength="2" autocomplete="off" inputmode="text" />
+      <input
+        id="welcomeInput"
+        class="welcome-input"
+        maxlength="2"
+        autocomplete="off"
+        inputmode="text"
+      />
       <div id="welcomeHint" class="welcome-hint" aria-live="polite"></div>
       <div class="welcome-foot">Padoms: atbilde ir tikai 2 burti.</div>
     </div>
   </div>
 
+  <!-- ===== SCENE ===== -->
   <main class="scene" id="scene">
-    <!-- DISKS -->
+
+    <!-- ===== DISKS ===== -->
     <div class="disk-shell disk-corner" id="diskShell" aria-label="Disk">
       <canvas id="diskCanvas" width="900" height="900"></canvas>
       <div class="disk-hint">Klikšķini, lai atvērtu</div>
     </div>
 
-    <!-- KĀRTS -->
-    <section class="task-card" id="taskCard" aria-label="Kārts">
+    <!-- ===== HINT KĀRTIS (renderē hints.js) ===== -->
+    <!-- hints.js pats iemountēs .hint-stack -->
+
+    <!-- ===== MOBILE: POGA "MĒRĶIS" ===== -->
+    <button
+      id="taskFab"
+      class="task-fab"
+      type="button"
+      aria-label="Atvērt uzdevumu"
+      hidden
+    >
+      Mērķis
+    </button>
+
+    <!-- ===== MOBILE: UZDEVUMA MODĀLIS ===== -->
+    <div id="taskOverlay" class="task-overlay" hidden>
+      <div class="task-modal" role="dialog" aria-modal="true" aria-label="Uzdevums">
+        <div class="task-modal-head">
+          <div class="task-modal-title">Mērķis</div>
+          <button
+            id="taskClose"
+            class="task-close"
+            type="button"
+            aria-label="Aizvērt"
+          >
+            ×
+          </button>
+        </div>
+
+        <!-- ŠEIT game.js pārvietos taskCard -->
+        <div id="taskModalBody" class="task-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- ===== DESKTOP / PAMATA UZDEVUMA KĀRTIŅA ===== -->
+    <section class="task-card" id="taskCard" aria-label="Uzdevums">
       <div class="card-header">
-        <div class="card-title" id="cardTitle">Uzdevums #1</div>
-        <div class="card-subtitle">Mērķis: <span id="targetSymbolLabel">★</span></div>
+        <div class="card-title" id="cardTitle">Uzdevums</div>
+        <div class="card-subtitle">
+          Mērķis: <span id="targetSymbolLabel">★</span>
+        </div>
       </div>
 
       <div class="card-body" id="cardBody">
-        <p>Kas par fantastisku Gadu Secību bijusi.</p>
-        <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
+        <p>Uzdevuma teksts.</p>
       </div>
 
       <div class="card-footer">
-        <p class="muted" id="feedback">Uzgriez disku, līdz pretī... <strong>OK</strong>.</p>
+        <p class="muted" id="feedback"></p>
 
         <div class="card-actions">
           <div class="result-msg" id="resultMsg" aria-live="polite"></div>
-          <button class="next-btn" id="nextBtn" type="button" hidden>Tālāk</button>
+          <button class="next-btn" id="nextBtn" type="button" hidden>
+            Tālāk
+          </button>
         </div>
       </div>
     </section>
+
   </main>
 
+  <!-- ===== SCRIPTS ===== -->
   <script src="assets/disk.js"></script>
   <script src="assets/hints.js"></script>
   <script src="assets/game.js"></script>
+
 </body>
 </html>
