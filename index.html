@@ -20,26 +20,36 @@
   </div>
 
   <main class="scene" id="scene">
-    <!-- DISKS (sākumā stūrī, lēni griežas) -->
-    <div class="disk-shell disk-corner" id="diskShell" aria-label="Disk">
-      <canvas id="diskCanvas" width="900" height="900"></canvas>
-      <div class="disk-hint">Klikšķini, lai atvērtu</div>
-    </div>
 
-    <!-- MĒRĶIS IKONA (atver uzdevuma kārti centrā) -->
-    <button id="targetBtn" class="target-btn" type="button" aria-label="Mērķis">
-      <span class="target-icon" aria-hidden="true">
-        <!-- vienkārša “target” ikona (SVG) -->
-        <svg viewBox="0 0 64 64" width="34" height="34" role="img" aria-hidden="true">
-          <circle cx="32" cy="32" r="22" fill="none" stroke="white" stroke-width="4" opacity="0.9"/>
-          <circle cx="32" cy="32" r="14" fill="none" stroke="white" stroke-width="4" opacity="0.75"/>
-          <circle cx="32" cy="32" r="6"  fill="white" opacity="0.95"/>
-          <path d="M44 18 L56 8 L52 24 Z" fill="white" opacity="0.9"/>
-          <path d="M44 18 L32 32" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
-        </svg>
-      </span>
-      <span class="target-label">Mērķis</span>
-    </button>
+    <!-- ✅ Corner UI: disks + hint stack + mērķis vienā rindā -->
+    <div class="corner-ui">
+
+      <!-- DISKS (sākumā stūrī, lēni griežas) -->
+      <div class="disk-shell disk-corner" id="diskShell" aria-label="Disk">
+        <canvas id="diskCanvas" width="900" height="900"></canvas>
+        <!-- ✅ noņemam uzrakstu -->
+        <div class="disk-hint"></div>
+      </div>
+
+      <!-- HINT STACK (hints.js iemontēs iekšā pats, ja tas tā bija) -->
+      <!-- Ja tev hint-stack jau tiek ģenerēts no JS, šo NEPIEVIENO.
+           Ja tev hint-stack ir statiski HTML, tad atstāj šeit kā bija. -->
+
+      <!-- MĒRĶIS IKONA (atver uzdevuma kārti centrā) -->
+      <button id="targetBtn" class="target-btn" type="button" aria-label="Mērķis">
+        <span class="target-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="34" height="34" role="img" aria-hidden="true">
+            <circle cx="32" cy="32" r="22" fill="none" stroke="white" stroke-width="4" opacity="0.9"/>
+            <circle cx="32" cy="32" r="14" fill="none" stroke="white" stroke-width="4" opacity="0.75"/>
+            <circle cx="32" cy="32" r="6"  fill="white" opacity="0.95"/>
+            <path d="M44 18 L56 8 L52 24 Z" fill="white" opacity="0.9"/>
+            <path d="M44 18 L32 32" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+          </svg>
+        </span>
+        <span class="target-label">Mērķis</span>
+      </button>
+
+    </div>
 
     <!-- KĀRTS (tagad atveras tikai centrā; apakšējā stūrī vairs nerādās) -->
     <section class="task-card" id="taskCard" aria-label="Uzdevums" aria-hidden="true">
