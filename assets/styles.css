@@ -18,10 +18,9 @@ html,body{
   inset:0;
   width:100vw;
   height:100vh;
-  overflow:hidden; /* ✅ vieta, kur bloķējam lapas scroll */
+  overflow:hidden; /* bloķējam lapas scroll */
 
   background-image: none;
-
   background-size: 100% 100%;   /* pilns ekrāns, STIEPTS */
   background-position: center;
   background-repeat: no-repeat;
@@ -82,13 +81,12 @@ html,body{
   width: var(--disk-size-active);
   transform: translate(-50%, -50%);
   cursor: grab;
+  z-index: 10;
 }
 
-.disk-center:active{
-  cursor: grabbing;
-}
+.disk-center:active{ cursor: grabbing; }
 
-/* ===== HINT ===== */
+/* ===== HINT (teksts zem diska) ===== */
 .disk-hint{
   position:absolute;
   left:50%;
@@ -106,57 +104,76 @@ html,body{
 
 .disk-center .disk-hint{ display:none; }
 
-/* ===== KĀRTS (INFORMATĪVA) ===== */
-.task-card{
+/* ===== MĒRĶIS IKONA ===== */
+.target-btn{
   position:absolute;
-  right: var(--pad);
-  bottom: var(--pad);
-  width: min(28vw, 320px);
-  max-width: 92vw;
+  left: calc(var(--pad) + var(--disk-size) + 14px);
+  top: calc(var(--pad) + 104px); /* zem hint-stack zonas */
+  width: 140px;
+  height: 56px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 14px;
+  background: rgba(15,16,20,.72);
+  color:#fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  backdrop-filter: blur(6px);
+  z-index: 6;
+
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+
+  cursor:pointer;
+  user-select:none;
+  appearance:none;
+}
+
+.target-btn:hover{ transform: translateY(-2px); }
+.target-btn:active{ transform: translateY(-1px); }
+
+.target-label{
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 14px;
+}
+
+/* ===== KĀRTS (UZDEVUMS) — tagad tikai MODAL centrā ===== */
+.task-card{
+  position: fixed;
+  z-index: 70;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(720px, 92vw);
+  max-height: min(70vh, 70svh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 
   background: rgba(255,255,255,0.94);
   border-radius: 16px;
   padding: 14px;
-
-  z-index: 6;
   box-shadow: 0 20px 60px rgba(0,0,0,.35);
   backdrop-filter: blur(6px);
 
-  /* Kārtei jābūt klikšķināmai (poga "Tālāk", u.c.) */
   pointer-events:auto;
+
+  display:none; /* pēc noklusējuma NERĀDĀM */
 }
 
-/* HUD */
-.hud{
-  position:absolute;
-  left: var(--pad);
-  bottom: var(--pad);
-  z-index: 6;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.82);
-  font-size: 13px;
-  font-weight: 700;
+.task-card.is-open{
+  display:block;
 }
 
-/* ===== MOBILE ===== */
-@media (max-width: 520px){
-  .task-card{
-    width: min(88vw, 360px);
-    right: 12px;
-    bottom: 12px;
-  }
-
-  .hud{
-    left: 12px;
-    bottom: 12px;
-  }
+.task-backdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  background: transparent; /* NEaptumšo */
 }
 
-.disk-center{
-  z-index: 10;
-}
-
+.task-backdrop[hidden]{ display:none !important; }
 
 /* ===== CARD ACTIONS ===== */
 .card-actions{
@@ -170,9 +187,7 @@ html,body{
 .result-msg{
   font-weight: 700;
   letter-spacing: 0.2px;
-  /* Kārts ir gaiša, tāpēc tekstam jābūt tumšam */
   color: #0b1220;
-  text-shadow: none;
   min-height: 1.2em;
 }
 
@@ -188,14 +203,8 @@ html,body{
   box-shadow: 0 10px 22px rgba(0,0,0,0.25);
 }
 
-.next-btn:active{
-  transform: translateY(1px);
-}
-
-.next-btn[hidden]{
-  display:none !important;
-}
-
+.next-btn:active{ transform: translateY(1px); }
+.next-btn[hidden]{ display:none !important; }
 
 /* ===== Welcome screen ===== */
 .welcome{
@@ -238,9 +247,7 @@ html,body{
   outline: none;
 }
 
-.welcome-input:focus{
-  border-color: rgba(0,0,0,0.35);
-}
+.welcome-input:focus{ border-color: rgba(0,0,0,0.35); }
 
 .welcome-hint{
   margin-top: 10px;
@@ -251,9 +258,7 @@ html,body{
   transition: opacity .2s;
 }
 
-.welcome-hint.show{
-  opacity: 1;
-}
+.welcome-hint.show{ opacity: 1; }
 
 .welcome-foot{
   margin-top: 10px;
@@ -261,10 +266,9 @@ html,body{
   font-size: 13px;
 }
 
-
 /* ===== HINT KĀRTIS (v2: hints.js) ===== */
 
-/* Stack stāv BLACUS diskam (nevis zem tā) */
+/* Stack stāv BLACUS diskam */
 .hint-stack{
   position:absolute;
   left: calc(var(--pad) + var(--disk-size) + 14px);
@@ -297,25 +301,19 @@ html,body{
   user-select:none;
   appearance: none;
 
-  /* ✅ svarīgais: vienota transform sistēma (lai hover vienmēr uzvar) */
-  --rot: 0deg;
-  --lift: 0px;
-  transform: translateY(var(--lift)) rotate(var(--rot)) translateZ(0);
-  transition: transform .15s ease, box-shadow .15s ease;
-  will-change: transform;
+  transform-style: preserve-3d;
 }
 
-/* Stacked pozīcijas + rotācija (vairs neliekam transform te!) */
-.hc-1{ top: 0;    z-index: 3; --rot: -2deg; }
-.hc-2{ top: 12px; z-index: 2; --rot:  1deg; }
-.hc-3{ top: 24px; z-index: 1; --rot:  3deg; }
+/* Stacked pozīcijas */
+.hc-1{ top: 0;    z-index: 3; --rot: -2deg; transform: rotate(-2deg); }
+.hc-2{ top: 12px; z-index: 2; --rot:  1deg; transform: rotate(1deg); }
+.hc-3{ top: 24px; z-index: 1; --rot:  3deg; transform: rotate(3deg); }
 
-/* ✅ Hover/Fokusā – vienmēr virs citām un skaidrs “active” efekts */
+/* Hover/focus: pacel virs pārējām + neliels lift */
 .hint-card:hover,
 .hint-card:focus-visible{
-  --lift: -6px;
-  z-index: 20;
-  box-shadow: 0 16px 34px rgba(0,0,0,.34);
+  z-index: 20 !important;
+  transform: translateY(-2px) rotate(var(--rot, 0deg));
 }
 
 /* Backdrop (parādās tikai, kad kārts ir atvērta) */
@@ -323,12 +321,10 @@ html,body{
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: transparent;   /* ✅ NEaptumšo */
+  background: transparent; /* neaptumšo */
 }
 
-.hint-backdrop[hidden]{
-  display:none !important;
-}
+.hint-backdrop[hidden]{ display:none !important; }
 
 /* Flip iekšējā struktūra */
 .hint-card-inner{
@@ -352,7 +348,7 @@ html,body{
 }
 
 .hint-front-title{
-  font-weight: 800;
+  font-weight: 900;
   font-size: 14px;
 }
 
@@ -380,7 +376,7 @@ html,body{
 /* Atvērta kārts: centrā + flip uz muguru */
 .hint-card.is-open{
   position: fixed;
-  z-index: 60;
+  z-index: 60 !important;
   top: 50%;
   left: 50%;
   width: min(720px, 92vw);
@@ -390,58 +386,23 @@ html,body{
   cursor: default;
 }
 
-/* kad atvērta, nerotējam ar hover */
-.hint-card.is-open:hover,
-.hint-card.is-open:focus-visible{
-  --lift: 0px;
-  z-index: 60;
+/* kad atvērta, nerotējam */
+.hint-card.is-open:hover{
   transform: translate(-50%, -50%) !important;
-  box-shadow: 0 18px 44px rgba(0,0,0,.36);
 }
 
 .hint-card.is-open .hint-card-inner{
   transform: rotateY(180deg);
 }
 
-/* Mobile: ja vietas maz, noliekam hintus zem diska (drošības režīms) */
+/* Mobile: ja vietas maz, noliekam hintus zem diska */
 @media (max-width: 520px){
   .hint-stack{
     left: var(--pad);
     top: calc(var(--pad) + var(--disk-size) + 22px);
   }
-}
-
-/* ===== MOBILE FIX: task-card lai vienmēr var tikt pie "Tālāk" ===== */
-@media (max-width: 520px){
-
-  /* mazāks disks centrā uz mobile */
-  :root{
-    --disk-size-active: min(86vw, 420px);
-  }
-
-  /* kartīte kā bottom-sheet pa visu platumu */
-  .task-card{
-    left: 12px !important;
-    right: 12px !important;
-    width: auto !important;
-
-    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-
-    /* kartīte nedrīkst būt augstāka par ekrānu */
-    max-height: 60vh !important;
-    max-height: 60svh !important;
-
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* "Tālāk" vienmēr redzams apakšā kartē */
-  .card-actions{
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    background: rgba(255,255,255,0.94);
-    padding-top: 10px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  .target-btn{
+    left: var(--pad);
+    top: calc(var(--pad) + var(--disk-size) + 22px + 106px);
   }
 }
