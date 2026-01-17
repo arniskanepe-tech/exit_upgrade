@@ -101,6 +101,8 @@ html,body{
   white-space: nowrap;
   opacity:.95;
   pointer-events:none;
+  
+  display: none; /* ← šī rinda */
 }
 
 .disk-center .disk-hint{ display:none; }
