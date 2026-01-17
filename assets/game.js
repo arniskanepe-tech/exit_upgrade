@@ -440,6 +440,7 @@
       resultMsg.textContent = "";
       setNextVisible(true);
       feedback.innerHTML = `Pareizi! Spied <strong>Tālāk</strong>, lai pārietu uz nākamo uzdevumu.`;
+      openTask(); // ✅ automātiski atver uzdevuma kārti, lai var uzreiz spiest "Tālāk"
     } else {
       solved = false;
       disk.renderStatus("NĒ", false);
