@@ -409,7 +409,7 @@ html,body{
     top: calc(var(--pad) + var(--disk-size) + 90px);
   }
   :root{
-    --disk--size: min(12vw,72px);
+    --disk-size: min(12vw,72px);
     --disk-size-active: min(85vw,420px);
     }
 }
