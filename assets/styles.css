@@ -1,5 +1,5 @@
 :root{
-  --disk-size: min(6vw, 80px);          /* stūrī */
+  --disk-size: min(8vw, 96px);          /* stūrī */
   --disk-size-active: min(70vw, 560px); /* centrā */
   --pad: 18px;
   --stack-size: 108px;
