@@ -108,8 +108,8 @@ html,body{
 /* ===== MĒRĶIS IKONA ===== */
 .target-btn{
   position:absolute;
-  left: calc(var(--pad)+ var(--disk-size)+ 14px+ var(--stack-size)+ 14px;
-  top: calc(var(--pad);
+  left: calc(var(--pad) + var(--disk-size) + 14px + var(--stack-size) + 14px);
+  top: var(--pad);
   width: 140px;
   height: 56px;
   border: 1px solid rgba(255,255,255,.35);
