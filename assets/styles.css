@@ -406,3 +406,40 @@ html,body{
     top: calc(var(--pad) + var(--disk-size) + 22px + 106px);
   }
 }
+
+/* ===== Corner UI wrapper (disk + hints + target vienā rindā) ===== */
+
+.corner-ui{
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  z-index: 6;
+}
+
+/* Noņemam veco vertikālo nobīdi, ja tāda bija */
+.corner-ui .hint-stack{
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+/* Mērķa poga stāv blakus, nevis zem */
+.corner-ui .target-btn{
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+/* ===== Mobile fallback — neko nesalauž ===== */
+@media (max-width: 520px){
+  .corner-ui{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
