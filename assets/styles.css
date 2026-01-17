@@ -406,6 +406,6 @@ html,body{
   }
   .target-btn{
     left: var(--pad);
-    top: calc(var(--pad) + var(--disk-size) + 22px + 106px);
+    top: calc(var(--pad) + var(--disk-size) + 90px);
   }
 }
