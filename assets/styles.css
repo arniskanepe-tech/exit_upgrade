@@ -1,4 +1,4 @@
-d:root{
+:root{
   --disk-size: min(6vw, 80px);          /* stūrī */
   --disk-size-active: min(70vw, 560px); /* centrā */
   --pad: 18px;
@@ -406,4 +406,3 @@ html,body{
     top: calc(var(--pad) + var(--disk-size) + 22px + 106px);
   }
 }
-
