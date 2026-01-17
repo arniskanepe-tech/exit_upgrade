@@ -402,7 +402,7 @@ html,body{
 @media (max-width: 520px){
   .hint-stack{
     left: var(--pad);
-    top: calc(var(--pad) + var(--disk-size) + 22px);
+    top: calc(var(--pad) + var(--disk-size) + 5px);
   }
   .target-btn{
     left: var(--pad);
