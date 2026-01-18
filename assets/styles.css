@@ -383,6 +383,7 @@ html,body{
   line-height: 1.45;
   opacity: .95;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* Atvērta kārts: centrā + flip uz muguru */
@@ -397,7 +398,7 @@ html,body{
   min-width: 260px;                  /* ⭐ UX drošība */
 
   height: auto;
-  min-height: 120px;
+  min-height: unset;
   
   transform: translate(-50%, -50%) !important;
   cursor: default;
