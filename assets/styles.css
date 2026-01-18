@@ -406,16 +406,27 @@ html,body{
   cursor: default;
 }
 
+/* FIX: open režīmā nerādam flip (citādi auto-height sabrūk) */
+.hint-card.is-open .hint-card-inner{
+  height: auto;
+  transform: none;
+}
+
+.hint-card.is-open .hint-front{
+  display: none;
+}
+
+.hint-card.is-open .hint-back{
+  position: relative;
+  inset: auto;
+  transform: none;
+  backface-visibility: visible;
+}
+
 /* Open režīmā: back saturu sākam no augšas */
 .hint-card.is-open .hint-back{
   justify-content: flex-start;
   align-items: flex-start;
-}
-
-.hint-card.is-open .hint-card-inner{
-  border-radius: inherit;
-  overflow: hidden;
-  transform: rotateY(180deg);
 }
 
 /* kad atvērta, nerotējam */
