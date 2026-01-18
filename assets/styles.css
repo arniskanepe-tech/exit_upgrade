@@ -169,6 +169,12 @@ html,body{
   display:block;
 }
 
+
+/* ✅ Rezultāta režīms – slēpjam sākotnējo uzdevuma tekstu */
+.task-card.show-result-only #cardBody{
+  display: none;
+}
+
 .task-backdrop{
   position: fixed;
   inset: 0;
