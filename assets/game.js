@@ -21,9 +21,9 @@
         <p>Kas par fantastisku Gadu Secību bijusi.</p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
       `,
-      hint1: "Padoms #1 (L1) — paskaties uz GADU secību.",
-      hint2: "Padoms #2 (L1) — cipari ir tieši 3 un tie ir redzami vienā līnijā.",
-      hint3: "Padoms #3 (L1) — uzgriez līdz MĒRĶA simbolam.",
+      hint1: "Šobrīd ir 2026.gads.",
+      hint2: "Tu taču saproti, ka gadi iet no mazākā uz lielāko.",
+      hint3: "Bledā mēs bijām 2025.gadā! Un tu saproti, ka uz diska nevar izvēlēties vairāk kā 1 ciparu, turklāt kāda jēga visos apļos būtu rakstīt to, kas atkārtojas! ",
     },
     {
       id: 2,
