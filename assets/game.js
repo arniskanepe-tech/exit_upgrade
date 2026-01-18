@@ -288,6 +288,9 @@
       disk.setInteractive(true);
     }
 
+    // uz jaunā level – atkal rādam pilno uzdevumu
+    taskCard.classList.remove("show-result-only");
+
     // uzdevuma kārti pēc level change neturam vaļā
     closeTask();
   }
@@ -428,7 +431,9 @@
       if (isLast) {
         setNextVisible(false);
         resultMsg.textContent = "";
-        feedback.innerHTML = `Pareizi!`;
+        feedback.innerHTML = `Pareizi! Spied <strong>Tālāk</strong>, lai pārietu uz nākamo uzdevumu.`;
+        taskCard.classList.add("show-result-only");
+        openTask();
 
         setTimeout(() => {
           showFinalScreen();
