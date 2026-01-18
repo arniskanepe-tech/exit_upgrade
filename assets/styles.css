@@ -397,7 +397,7 @@ html,body{
   min-width: 260px;                  /* ⭐ UX drošība */
 
   height: auto;
-  min-height: unset;
+  min-height: 120px;
   
   transform: translate(-50%, -50%) !important;
   cursor: default;
