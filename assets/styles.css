@@ -406,13 +406,6 @@ html,body{
   cursor: default;
 }
 
-/* Open režīmā: absolute sejas padarām par “normālu” saturu */
-.hint-card.is-open .hint-card-face{
-  position: relative;
-  inset: auto;
-  padding: 14px;
-}
-
 /* Open režīmā: back saturu sākam no augšas */
 .hint-card.is-open .hint-back{
   justify-content: flex-start;
