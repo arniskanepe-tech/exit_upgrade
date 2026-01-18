@@ -63,9 +63,9 @@
         <p></p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
       `,
-      hint1: "",
-      hint2: "",
-      hint3: "",
+      hint1: "Tev var nākties meklēt bildē sīkumus",
+      hint2: "3 grāmatas 3 valodas 3 skaiļi",
+      hint3: "Grāmatas ir dažādās krāsās, pa visu bildi izmētāti teksti",
     },
     {
       id: 5,
