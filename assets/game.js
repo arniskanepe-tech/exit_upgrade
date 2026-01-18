@@ -432,7 +432,6 @@
         setNextVisible(false);
         resultMsg.textContent = "";
         feedback.innerHTML = `Pareizi!`;
-        openTask();
 
         setTimeout(() => {
           showFinalScreen();
