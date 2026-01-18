@@ -422,15 +422,12 @@ html,body{
 .hint-card.is-open .hint-card-inner{
   border-radius: inherit;
   overflow: hidden;
+  transform: rotateY(180deg);
 }
 
 /* kad atvērta, nerotējam */
 .hint-card.is-open:hover{
   transform: translate(-50%, -50%) !important;
-}
-
-.hint-card.is-open .hint-card-inner{
-  transform: rotateY(180deg);
 }
 
 /* Mobile: ja vietas maz, noliekam hintus zem diska */
