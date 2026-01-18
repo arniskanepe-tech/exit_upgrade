@@ -433,6 +433,10 @@
         resultMsg.textContent = "";
         feedback.innerHTML = `Pareizi!`;
 
+      // 🔴 garantēti aizveram visu pirms fināla
+      closeTask();
+      taskCard.classList.remove("show-result-only");
+
         setTimeout(() => {
           showFinalScreen();
         }, 420);
