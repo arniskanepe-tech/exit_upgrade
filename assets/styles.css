@@ -419,6 +419,11 @@ html,body{
   align-items: flex-start;
 }
 
+.hint-card.is-open .hint-card-inner{
+  border-radius: inherit;
+  overflow: hidden;
+}
+
 /* kad atvērta, nerotējam */
 .hint-card.is-open:hover{
   transform: translate(-50%, -50%) !important;
