@@ -130,7 +130,10 @@ html,body{
   cursor:pointer;
   user-select:none;
   appearance:none;
+
 }
+
+.target-btn[hidden]{ display:none !important; }
 
 .target-btn:hover{ transform: translateY(-2px); }
 .target-btn:active{ transform: translateY(-1px); }
