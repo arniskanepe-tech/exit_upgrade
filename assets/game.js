@@ -49,7 +49,7 @@
         <p></p>
         <p class="muted">Uzgriez kodu pretī izvēlētajam simbolam.</p>
       `,
-      hint1: "Šo uzdevumu nevarēs veikt bez mobilās ierīces palīdzības.",
+      hint1: "Šo uzdevumu nevarēs veikt bez Tavas mobilās ierīces palīdzības.",
       hint2: "Bildē izmētātie skaitļi nav mazsvarīgi, tikai ko tie nozīmē, un kāds tam sakars ar mobilo ierīci?",
       hint3: "Varētu būt viens no datuma formātiem, ne? Un vai tik tu tajā datumā neveici skrējienu? Nez cik tas bija grūts?",
     },
