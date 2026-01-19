@@ -446,7 +446,7 @@ html,body{
   }
   .target-btn{
     left: var(--pad);
-    top: calc(var(--pad) + var(--disk-size) + 120px);
+    top: calc(var(--pad) + var(--disk-size) + 105px);
   }
 }
 
