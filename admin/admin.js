@@ -40,6 +40,56 @@
       window.location.href = "/admin";
     });
   }
+  
+  // ===== Import no seed (vienreizēja operācija) =====
+const btnImportSeed = document.getElementById("btnImportSeed");
+if (btnImportSeed) {
+  btnImportSeed.addEventListener("click", async () => {
+    const yes = confirm("Importēt trūkstošos līmeņus no seed/levels.json?");
+    if (!yes) return;
+
+    btnImportSeed.disabled = true;
+    const oldText = btnImportSeed.textContent;
+    btnImportSeed.textContent = "Importēju…";
+
+    try {
+      const res = await fetch("/api/admin/import-seed", {
+        method: "POST",
+        headers: { "x-admin-token": token }
+      });
+
+      if (res.status === 401) {
+        alert("Nav piekļuves (nepareiza admin atslēga).");
+        localStorage.removeItem("ADMIN_TOKEN");
+        window.location.href = "/admin";
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      if (!data || !data.ok) {
+        alert("Importa kļūda. Paskaties Railway logs.");
+        return;
+      }
+
+      alert(
+        `Imports pabeigts!\n` +
+        `Seedā kopā: ${data.summary.totalInSeed}\n` +
+        `Ielikti: ${data.summary.inserted}\n` +
+        `Izlaisti (jau bija): ${data.summary.skipped}`
+      );
+
+      const levels = await fetchAdminLevels();
+      renderLevels(levels);
+
+    } catch (e) {
+      console.error(e);
+      alert("Neizdevās izpildīt importu (skat. Console).");
+    } finally {
+      btnImportSeed.disabled = false;
+      btnImportSeed.textContent = oldText;
+    }
+  });
+}
 
   const levelsListEl = document.getElementById("levelsList");
   const statusEl = document.getElementById("statusLine");
