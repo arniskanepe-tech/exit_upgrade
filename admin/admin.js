@@ -20,19 +20,21 @@
       }
 
       localStorage.setItem("ADMIN_TOKEN", t);
-      window.location.href = "/admin/panel.html";
+      // Saskan ar server.js maršrutu /admin/panel
+      window.location.href = "/admin/panel";
     });
 
     return;
   }
 
-  // ===== Admin paneļa lapa =====
+  // ===== Admin paneļa lapa (/admin/panel) =====
   if (!token) {
     alert("Nav admin piekļuves. Lūdzu ielogojies.");
     window.location.href = "/admin";
     return;
   }
 
+  // ===== Logout =====
   const btnLogout = document.getElementById("btnLogout");
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
@@ -40,56 +42,6 @@
       window.location.href = "/admin";
     });
   }
-  
-  // ===== Import no seed (vienreizēja operācija) =====
-const btnImportSeed = document.getElementById("btnImportSeed");
-if (btnImportSeed) {
-  btnImportSeed.addEventListener("click", async () => {
-    const yes = confirm("Importēt trūkstošos līmeņus no seed/levels.json?");
-    if (!yes) return;
-
-    btnImportSeed.disabled = true;
-    const oldText = btnImportSeed.textContent;
-    btnImportSeed.textContent = "Importēju…";
-
-    try {
-      const res = await fetch("/api/admin/import-seed", {
-        method: "POST",
-        headers: { "x-admin-token": token }
-      });
-
-      if (res.status === 401) {
-        alert("Nav piekļuves (nepareiza admin atslēga).");
-        localStorage.removeItem("ADMIN_TOKEN");
-        window.location.href = "/admin";
-        return;
-      }
-
-      const data = await res.json().catch(() => null);
-      if (!data || !data.ok) {
-        alert("Importa kļūda. Paskaties Railway logs.");
-        return;
-      }
-
-      alert(
-        `Imports pabeigts!\n` +
-        `Seedā kopā: ${data.summary.totalInSeed}\n` +
-        `Ielikti: ${data.summary.inserted}\n` +
-        `Izlaisti (jau bija): ${data.summary.skipped}`
-      );
-
-      const levels = await fetchAdminLevels();
-      renderLevels(levels);
-
-    } catch (e) {
-      console.error(e);
-      alert("Neizdevās izpildīt importu (skat. Console).");
-    } finally {
-      btnImportSeed.disabled = false;
-      btnImportSeed.textContent = oldText;
-    }
-  });
-}
 
   const levelsListEl = document.getElementById("levelsList");
   const statusEl = document.getElementById("statusLine");
@@ -98,22 +50,22 @@ if (btnImportSeed) {
     if (statusEl) statusEl.textContent = msg;
   }
 
-  function escapeHtml(s){
+  function escapeHtml(s) {
     return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  async function fetchAdminLevels(){
+  async function fetchAdminLevels() {
     setStatus("Ielādēju līmeņus…");
 
     let res;
     try {
       res = await fetch("/api/admin/levels", {
-        headers: { "x-admin-token": token }
+        headers: { "x-admin-token": token },
       });
     } catch (e) {
       setStatus("Kļūda: nevaru pieslēgties serverim.");
@@ -142,42 +94,48 @@ if (btnImportSeed) {
     return data.levels;
   }
 
-  function renderLevels(levels){
+  function renderLevels(levels) {
     if (!levelsListEl) return;
 
-    if (!levels.length){
+    if (!levels.length) {
       levelsListEl.innerHTML =
         '<div class="level-row"><div class="level-meta"><div class="name">Nav līmeņu</div><div class="desc">DB ir tukša vai /api/admin/levels nav pieejams.</div></div></div>';
       return;
     }
 
-    levelsListEl.innerHTML = levels.map(lvl => {
-      const active = !!lvl.active;
-      const badge = active ? "ACTIVE" : "INACTIVE";
-      const badgeClass = active ? "badge badge-on" : "badge badge-off";
+    levelsListEl.innerHTML = levels
+      .map((lvl) => {
+        const active = !!lvl.active;
+        const badge = active ? "ACTIVE" : "INACTIVE";
+        const badgeClass = active ? "badge badge-on" : "badge badge-off";
 
-      return `
-        <div class="level-row" data-id="${lvl.id}" data-active="${active}">
-          <div class="level-meta">
-            <div class="name">${escapeHtml(lvl.title)} <span class="${badgeClass}">${badge}</span></div>
-            <div class="desc">bg: ${escapeHtml(lvl.background)} • target: ${lvl.targetSlot} • sort: ${lvl.sortOrder}</div>
+        const title = (lvl.title && String(lvl.title).trim()) ? lvl.title : `Līmenis #${lvl.id}`;
+        const sortOrder = (lvl.sortOrder ?? "—");
+
+        return `
+          <div class="level-row" data-id="${lvl.id}" data-active="${active}">
+            <div class="level-meta">
+              <div class="name">${escapeHtml(title)} <span class="${badgeClass}">${badge}</span></div>
+              <div class="desc">bg: ${escapeHtml(lvl.background)} • target: ${lvl.targetSlot} • sort: ${escapeHtml(sortOrder)}</div>
+            </div>
+
+            <button class="btn-toggle" type="button" data-action="toggle">
+              ${active ? "Izslēgt" : "Ieslēgt"}
+            </button>
           </div>
-          <button class="btn-toggle" type="button" data-action="toggle">
-            ${active ? "Izslēgt" : "Ieslēgt"}
-          </button>
-        </div>
-      `;
-    }).join("");
+        `;
+      })
+      .join("");
   }
 
-  async function toggleActive(id, newActive){
+  async function toggleActive(id, newActive) {
     const res = await fetch(`/api/admin/levels/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-token": token
+        "x-admin-token": token,
       },
-      body: JSON.stringify({ active: newActive })
+      body: JSON.stringify({ active: newActive }),
     });
 
     if (res.status === 401) {
@@ -195,6 +153,56 @@ if (btnImportSeed) {
     return true;
   }
 
+  // ===== Import no seed (vienreizēja operācija) =====
+  const btnImportSeed = document.getElementById("btnImportSeed");
+  if (btnImportSeed) {
+    btnImportSeed.addEventListener("click", async () => {
+      const yes = confirm("Importēt trūkstošos līmeņus no seed/levels.json?");
+      if (!yes) return;
+
+      btnImportSeed.disabled = true;
+      const oldText = btnImportSeed.textContent;
+      btnImportSeed.textContent = "Importēju…";
+
+      try {
+        const res = await fetch("/api/admin/import-seed", {
+          method: "POST",
+          headers: { "x-admin-token": token },
+        });
+
+        if (res.status === 401) {
+          alert("Nav piekļuves (nepareiza admin atslēga).");
+          localStorage.removeItem("ADMIN_TOKEN");
+          window.location.href = "/admin";
+          return;
+        }
+
+        const data = await res.json().catch(() => null);
+        if (!data || !data.ok) {
+          alert("Importa kļūda. Paskaties Railway logs.");
+          return;
+        }
+
+        alert(
+          `Imports pabeigts!\n` +
+            `Seedā kopā: ${data.summary.totalInSeed}\n` +
+            `Ielikti: ${data.summary.inserted}\n` +
+            `Izlaisti (jau bija): ${data.summary.skipped}`
+        );
+
+        const levels = await fetchAdminLevels();
+        renderLevels(levels);
+      } catch (e) {
+        console.error(e);
+        alert("Neizdevās izpildīt importu (skat. Console).");
+      } finally {
+        btnImportSeed.disabled = false;
+        btnImportSeed.textContent = oldText;
+      }
+    });
+  }
+
+  // ===== Toggle klikšķi (event delegation) =====
   if (levelsListEl) {
     levelsListEl.addEventListener("click", async (e) => {
       const btn = e.target.closest('button[data-action="toggle"]');
@@ -204,7 +212,7 @@ if (btnImportSeed) {
       if (!row) return;
 
       const id = Number(row.dataset.id);
-      const isActive = (row.dataset.active === "true");
+      const isActive = row.dataset.active === "true";
       const nextActive = !isActive;
 
       btn.disabled = true;
@@ -220,9 +228,9 @@ if (btnImportSeed) {
     });
   }
 
+  // ===== Start =====
   (async () => {
     const levels = await fetchAdminLevels();
     renderLevels(levels);
   })();
-
 })();
