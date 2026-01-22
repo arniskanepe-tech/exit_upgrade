@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disku spēle – Admin panelis</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --card:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.14);
+      --text:rgba(255,255,255,0.92);
+      --muted:rgba(255,255,255,0.68);
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    header{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 18px;
+      border-bottom:1px solid var(--border);
+      background:rgba(0,0,0,0.18);
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index:10;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .title h1{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+    }
+    .title .sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .btn{
+      padding:9px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn.primary{
+      background:#4da3ff;
+      border-color:transparent;
+      color:#081018;
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+    }
+    .card h2{
+      margin:0 0 10px;
+      font-size:16px;
+    }
+    .muted{ color:var(--muted); font-size:13px; line-height:1.35; }
+    .levels{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+    .level-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(0,0,0,0.18);
+    }
+    .level-meta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .level-meta .name{
+      font-weight:700;
+      font-size:14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .level-meta .desc{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--muted);
+    }
+    .pill.on{ color:#c7ffd3; border-color: rgba(199,255,211,0.35); }
+    .pill.off{ color:#ffd3d3; border-color: rgba(255,211,211,0.35); }
+  
+    .status{
+      max-width:1100px;
+      margin:14px auto 0;
+      padding:0 18px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      margin-left:8px;
+      border:1px solid var(--border);
+      opacity:.95;
+      vertical-align:middle;
+    }
+    .badge-on{ background: rgba(0,200,100,0.18); }
+    .badge-off{ background: rgba(220,120,0,0.18); }
+
+    .btn-toggle{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .btn-toggle:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title">
+      <h1>Admin panelis</h1>
+      <div class="sub">Šeit pārvaldīsi līmeņus (v1 – skelets).</div>
+    </div>
+    <div class="actions">
+      <button id="btnLogout" class="btn" type="button">Iziet</button>
+      <button id="btnAdd" class="btn primary" type="button">+ Pievienot līmeni</button>
+    </div>
+  </header>
+    <div class="wrap">
+      <div id="statusLine" class="status" aria-live="polite">—</div>
+    </div>
+
+
+  <main class="wrap">
+    <div class="grid">
+      <section class="card">
+        <h2>Līmeņi</h2>
+        <div class="muted">
+          Šobrīd šeit ir “paraugs”, lai redzi, kā izskatīsies saraksts.
+          Nākamajā solī mēs šo paraugu aizstāsim ar datiem no servera (/api) un Railway DB.
+        </div>
+
+        <div id="levelsList" class="levels" aria-label="Līmeņu saraksts">
+          <!-- Pagaidu paraugrindas -->
+          <div class="level-row">
+            <div class="level-meta">
+              <div class="name">Uzdevums #1</div>
+              <div class="desc">active: true • sort: 10</div>
+            </div>
+            <span class="pill on">AKTĪVS</span>
+          </div>
+
+          <div class="level-row">
+            <div class="level-meta">
+              <div class="name">Uzdevums #2</div>
+              <div class="desc">active: false • sort: 20</div>
+            </div>
+            <span class="pill off">NEAKTĪVS</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

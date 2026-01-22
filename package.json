@@ -1,0 +1,15 @@
+{
+  "name": "disku-spele-admin-v1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Disku spēle ar admin paneli (v1) + Railway Postgres (drīzumā).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

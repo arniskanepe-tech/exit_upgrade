@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Uzdevums #1",
+    "background": "bg.jpg",
+    "targetSlot": 1,
+    "answer": "345",
+    "cardHtml": "<p>Kas par fantastisku gadu secību bijusi.</p>",
+    "hint1": "Paskaties uz ciparu kārtību.",
+    "hint2": "Trīs cipari, katrs savā vietā.",
+    "hint3": "Nav jāmin uz dullo.",
+    "active": true,
+    "sortOrder": 10
+  },
+  {
+    "title": "Uzdevums #2",
+    "background": "bg1.jpg",
+    "targetSlot": 3,
+    "answer": "728",
+    "cardHtml": "<p>Katrs simbols nozīmē ciparu.</p>",
+    "hint1": "Simboli nav nejauši.",
+    "hint2": "Pievērs uzmanību diskiem.",
+    "hint3": "Vidējais disks ir atslēga.",
+    "active": true,
+    "sortOrder": 20
+  }
+]
