@@ -51,6 +51,8 @@
       display:flex;
       gap:10px;
       align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
     .btn{
       padding:9px 12px;
@@ -66,6 +68,7 @@
       border-color:transparent;
       color:#081018;
     }
+
     .wrap{
       max-width:980px;
       margin:0 auto;
@@ -87,6 +90,7 @@
       font-size:16px;
     }
     .muted{ color:var(--muted); font-size:13px; line-height:1.35; }
+
     .levels{
       display:flex;
       flex-direction:column;
@@ -120,23 +124,6 @@
       font-size:12px;
       color:var(--muted);
     }
-    .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.16);
-      color:var(--muted);
-    }
-    .pill.on{ color:#c7ffd3; border-color: rgba(199,255,211,0.35); }
-    .pill.off{ color:#ffd3d3; border-color: rgba(255,211,211,0.35); }
-  
-    .status{
-      max-width:1100px;
-      margin:14px auto 0;
-      padding:0 18px;
-      color:var(--muted);
-      font-size:13px;
-    }
     .badge{
       display:inline-flex;
       align-items:center;
@@ -167,6 +154,11 @@
       cursor:not-allowed;
     }
 
+    .status{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:12px;
+    }
   </style>
 </head>
 <body>
@@ -174,46 +166,28 @@
   <header>
     <div class="title">
       <h1>Admin panelis</h1>
-      <div class="sub">Šeit pārvaldīsi līmeņus (v1 – skelets).</div>
+      <div class="sub">Šeit pārvaldīsi līmeņus (v1).</div>
     </div>
+
     <div class="actions">
       <button id="btnLogout" class="btn" type="button">Iziet</button>
       <button id="btnImportSeed" class="btn" type="button">Importēt līmeņus no seed</button>
       <button id="btnAdd" class="btn primary" type="button">+ Pievienot līmeni</button>
     </div>
   </header>
-    <div class="wrap">
-      <div id="statusLine" class="status" aria-live="polite">—</div>
-    </div>
-
 
   <main class="wrap">
-    <div class="grid">
+    <div id="statusLine" class="status" aria-live="polite">—</div>
+
+    <div class="grid" style="margin-top:12px;">
       <section class="card">
         <h2>Līmeņi</h2>
         <div class="muted">
-          Šobrīd šeit ir “paraugs”, lai redzi, kā izskatīsies saraksts.
-          Nākamajā solī mēs šo paraugu aizstāsim ar datiem no servera (/api) un Railway DB.
+          Šeit redzi līmeņu sarakstu no DB. Vari ieslēgt/izslēgt līmeņus un (nākamajā solī) rediģēt saturu.
         </div>
 
-        <div id="levelsList" class="levels" aria-label="Līmeņu saraksts">
-          <!-- Pagaidu paraugrindas -->
-          <div class="level-row">
-            <div class="level-meta">
-              <div class="name">Uzdevums #1</div>
-              <div class="desc">active: true • sort: 10</div>
-            </div>
-            <span class="pill on">AKTĪVS</span>
-          </div>
-
-          <div class="level-row">
-            <div class="level-meta">
-              <div class="name">Uzdevums #2</div>
-              <div class="desc">active: false • sort: 20</div>
-            </div>
-            <span class="pill off">NEAKTĪVS</span>
-          </div>
-        </div>
+        <!-- Admin JS šeit ieliks sarakstu no /api/admin/levels -->
+        <div id="levelsList" class="levels" aria-label="Līmeņu saraksts"></div>
       </section>
     </div>
   </main>
