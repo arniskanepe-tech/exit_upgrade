@@ -1,15 +1,5 @@
 // admin/admin.js
 // Admin paneļa loģika (v1)
-//
-// ŠIS FAILS:
-// - satur visu admin uzvedību (JS)
-// - ir atdalīts no spēles loģikas (game.js)
-//
-// Šobrīd (v1):
-// - Login lapā: saglabā ADMIN_TOKEN un pārsūta uz /admin/panel.html
-// - Panelī: ielādē līmeņus no DB (GET /api/admin/levels)
-// - Panelī: ļauj ieslēgt/izslēgt līmeni (PUT /api/admin/levels/:id, body {active})
-// - Ir poga "Iziet" (logout), kas izdzēš tokenu
 
 (function () {
   const isLoginPage = !!document.getElementById("loginForm");
@@ -30,21 +20,19 @@
       }
 
       localStorage.setItem("ADMIN_TOKEN", t);
-      // Pēc veiksmīga login ejam uz paneli
       window.location.href = "/admin/panel.html";
     });
 
-    return; // login lapā ar to pietiek
+    return;
   }
 
-  // ===== Admin paneļa lapas (piem. /admin/panel.html) =====
+  // ===== Admin paneļa lapa =====
   if (!token) {
     alert("Nav admin piekļuves. Lūdzu ielogojies.");
     window.location.href = "/admin";
     return;
   }
 
-  // Logout poga (ja ir)
   const btnLogout = document.getElementById("btnLogout");
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
@@ -56,22 +44,41 @@
   const levelsListEl = document.getElementById("levelsList");
   const statusEl = document.getElementById("statusLine");
 
-  function setStatus(msg){
+  function setStatus(msg) {
     if (statusEl) statusEl.textContent = msg;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
   async function fetchAdminLevels(){
     setStatus("Ielādēju līmeņus…");
-    const res = await fetch("/api/admin/levels", {
-      headers: {
-        "x-admin-token": token
-      }
-    });
+
+    let res;
+    try {
+      res = await fetch("/api/admin/levels", {
+        headers: { "x-admin-token": token }
+      });
+    } catch (e) {
+      setStatus("Kļūda: nevaru pieslēgties serverim.");
+      return [];
+    }
 
     if (res.status === 401) {
       alert("Nav piekļuves (nepareiza admin atslēga).");
       localStorage.removeItem("ADMIN_TOKEN");
       window.location.href = "/admin";
+      return [];
+    }
+
+    if (res.status === 404) {
+      setStatus("Kļūda: serverī nav GET /api/admin/levels. (Jāpieliek server.js)");
       return [];
     }
 
@@ -85,20 +92,12 @@
     return data.levels;
   }
 
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
   function renderLevels(levels){
     if (!levelsListEl) return;
 
     if (!levels.length){
-      levelsListEl.innerHTML = '<div class="level-row"><div class="level-meta"><div class="name">Nav līmeņu</div><div class="desc">DB ir tukša vai nav seed.</div></div></div>';
+      levelsListEl.innerHTML =
+        '<div class="level-row"><div class="level-meta"><div class="name">Nav līmeņu</div><div class="desc">DB ir tukša vai /api/admin/levels nav pieejams.</div></div></div>';
       return;
     }
 
@@ -106,13 +105,13 @@
       const active = !!lvl.active;
       const badge = active ? "ACTIVE" : "INACTIVE";
       const badgeClass = active ? "badge badge-on" : "badge badge-off";
+
       return `
         <div class="level-row" data-id="${lvl.id}" data-active="${active}">
           <div class="level-meta">
             <div class="name">${escapeHtml(lvl.title)} <span class="${badgeClass}">${badge}</span></div>
             <div class="desc">bg: ${escapeHtml(lvl.background)} • target: ${lvl.targetSlot} • sort: ${lvl.sortOrder}</div>
           </div>
-
           <button class="btn-toggle" type="button" data-action="toggle">
             ${active ? "Izslēgt" : "Ieslēgt"}
           </button>
@@ -146,7 +145,6 @@
     return true;
   }
 
-  // Klikšķu apstrāde ar event delegation (vienkārši, droši)
   if (levelsListEl) {
     levelsListEl.addEventListener("click", async (e) => {
       const btn = e.target.closest('button[data-action="toggle"]');
@@ -164,7 +162,6 @@
 
       const ok = await toggleActive(id, nextActive);
       if (ok) {
-        // Vienkāršākais: pārlādējam sarakstu no DB
         const levels = await fetchAdminLevels();
         renderLevels(levels);
       }
@@ -173,7 +170,6 @@
     });
   }
 
-  // Start: ielādē un uzzīmē līmeņus
   (async () => {
     const levels = await fetchAdminLevels();
     renderLevels(levels);
