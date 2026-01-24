@@ -12,70 +12,59 @@
   }
 
   function setToken(v) {
-    localStorage.setItem("adminToken", String(v || ""));
+    localStorage.setItem("adminToken", v || "");
   }
 
   async function apiJSON(url, opts = {}) {
-    const token = getToken();
-    const headers = {
-      "Content-Type": "application/json",
-      ...(opts.headers || {}),
-    };
-    if (token) headers["x-admin-token"] = token;
+    const headers = Object.assign({}, opts.headers || {});
+    const tok = getToken();
+    if (tok) headers["x-admin-token"] = tok;
+
+    if (!headers["Content-Type"] && opts.body) {
+      headers["Content-Type"] = "application/json";
+    }
 
     const res = await fetch(url, { ...opts, headers });
-    const text = await res.text();
+
     let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (_) {}
+    try {
+      data = await res.json();
+    } catch (_) {
+      // ignore
+    }
 
     if (!res.ok) {
       const msg = data?.error || data?.message || `HTTP ${res.status}`;
       throw new Error(msg);
     }
-    return data;
-  }
 
-  function escapeHTML(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
+    return data;
   }
 
   // =========================================================
   // 1) LOGIN REŽĪMS
   // =========================================================
   const loginForm = $("loginForm");
-  if (loginForm) {
-    const tokenInput = $("token");
+  const tokenInput = $("tokenInput");
+  const btnLogin = $("btnLogin");
 
+  if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const token = (tokenInput?.value || "").trim();
-      setToken(token);
+      const tok = String(tokenInput?.value || "").trim();
+      setToken(tok);
 
-      // Pārbaudām tokenu ar admin endpointu
+      // quick ping
       try {
         await apiJSON("/api/admin/levels");
         window.location.href = "/admin/panel";
       } catch (err) {
-        // ja nepareizi — notīram un parādam kļūdu
-        setToken("");
-        alert("Nepareiza admin atslēga (vai serveris neatbild).");
-        if (tokenInput) tokenInput.focus();
+        alert(err.message || "Neizdevās pieslēgties.");
       }
     });
 
-    // Ja jau tokens ir saglabāts, var mēģināt uzreiz
-    const existing = getToken();
-    if (existing) {
-      apiJSON("/api/admin/levels")
-        .then(() => { window.location.href = "/admin/panel"; })
-        .catch(() => { /* klusām paliekam login */ });
-    }
-
-    return; // stop: login lapai viss
+    if (btnLogin) btnLogin.disabled = false;
+    return; // login mode ends
   }
 
   // =========================================================
@@ -85,6 +74,8 @@
   // ====== DOM ======
   const statusLine = $("statusLine");
   const levelsList = $("levelsList");
+  const sortBy = $("sortBy");
+  const sortDir = $("sortDir");
 
   const btnImportSeed = $("btnImportSeed");
   const btnAdd = $("btnAdd");
@@ -92,163 +83,121 @@
 
   // modal
   const levelModal = $("levelModal");
+  const modalTitle = $("modalTitle");
   const levelForm = $("levelForm");
-  const levelFormError = $("levelFormError");
 
-  const f_id = $("levelId");
+  const f_id = $("f_id");
   const f_title = $("f_title");
-  const f_background = $("f_background");
-  const f_targetSlot = $("f_targetSlot");
+  const f_bg = $("f_bg");
+  const f_slot = $("f_slot");
+  const f_sort = $("f_sort");
   const f_answer = $("f_answer");
-  const f_cardHtml = $("f_cardHtml");
+  const f_card = $("f_card");
   const f_hint1 = $("f_hint1");
   const f_hint2 = $("f_hint2");
   const f_hint3 = $("f_hint3");
-  const f_sortOrder = $("f_sortOrder");
   const f_active = $("f_active");
 
   // ====== state ======
   let levelsCache = [];
 
-  // ====== utils ======
+  function getSortState(){
+    return {
+      order: localStorage.getItem("adminLevelsOrder") || "sort",
+      dir: localStorage.getItem("adminLevelsDir") || "asc",
+    };
+  }
+
+  function setSortState(order, dir){
+    localStorage.setItem("adminLevelsOrder", order);
+    localStorage.setItem("adminLevelsDir", dir);
+  }
+
   function setStatus(msg) {
     if (statusLine) statusLine.textContent = msg;
   }
 
-  function showError(msg) {
-    if (!levelFormError) return;
-    levelFormError.textContent = msg;
-    levelFormError.classList.remove("hidden");
-  }
-
-  function clearError() {
-    if (!levelFormError) return;
-    levelFormError.textContent = "";
-    levelFormError.classList.add("hidden");
-  }
-
-  // ====== modal open/close ======
-  function openModal(mode, level = null) {
-    clearError();
-    const titleEl = $("levelModalTitle");
-    if (titleEl) {
-      titleEl.textContent = (mode === "add")
-        ? "Pievienot līmeni"
-        : `Rediģēt līmeni #${level?.id ?? ""}`;
-    }
-
-    if (mode === "add") {
-      f_id.value = "";
-      f_title.value = "";
-      f_background.value = "";
-      f_targetSlot.value = 1;
-      f_answer.value = "";
-      f_cardHtml.value = "";
-      f_hint1.value = "";
-      f_hint2.value = "";
-      f_hint3.value = "";
-      f_sortOrder.value = 100;
-      f_active.checked = true;
-    } else {
-      f_id.value = level?.id ?? "";
-      f_title.value = level?.title ?? "";
-      f_background.value = level?.background ?? "";
-      f_targetSlot.value = Number(level?.targetSlot ?? 1);
-      f_answer.value = level?.answer ?? "";
-      f_cardHtml.value = level?.cardHtml ?? "";
-      f_hint1.value = level?.hint1 ?? "";
-      f_hint2.value = level?.hint2 ?? "";
-      f_hint3.value = level?.hint3 ?? "";
-      f_sortOrder.value = (level?.sortOrder ?? 100);
-      f_active.checked = !!level?.active;
-    }
-
-    levelModal.classList.remove("hidden");
+  // ====== modal helpers ======
+  function openModal() {
+    if (!levelModal) return;
+    levelModal.classList.add("is-open");
     levelModal.setAttribute("aria-hidden", "false");
-    setTimeout(() => f_title.focus(), 0);
   }
 
   function closeModal() {
-    levelModal.classList.add("hidden");
+    if (!levelModal) return;
+    levelModal.classList.remove("is-open");
     levelModal.setAttribute("aria-hidden", "true");
   }
 
-  if (levelModal) {
-    levelModal.addEventListener("click", (e) => {
-      const closeEl = e.target.closest("[data-close]");
-      if (!closeEl) return;
-      e.preventDefault();
-      closeModal();
-    });
+  function fillForm(level) {
+    f_id.value = level?.id ?? "";
+    f_title.value = level?.title ?? "";
+    f_bg.value = level?.background ?? "";
+    f_slot.value = level?.targetSlot ?? 1;
+    f_sort.value = level?.sortOrder ?? 100;
+    f_answer.value = level?.answer ?? "";
+    f_card.value = level?.cardHtml ?? "";
+    f_hint1.value = level?.hint1 ?? "";
+    f_hint2.value = level?.hint2 ?? "";
+    f_hint3.value = level?.hint3 ?? "";
+    f_active.checked = !!level?.active;
   }
 
-  window.addEventListener("keydown", (e) => {
-    if (!levelModal) return;
-    if (!levelModal.classList.contains("hidden") && e.key === "Escape") closeModal();
-  });
-
-  // ====== collect payload ======
-  function buildPayload() {
-    const title = f_title.value.trim();
-    const background = f_background.value.trim();
-    const targetSlot = Number(f_targetSlot.value);
-    const answer = f_answer.value.trim();
-
-    if (!title) throw new Error("Title ir obligāts.");
-    if (!Number.isFinite(targetSlot) || targetSlot < 1 || targetSlot > 9) {
-      throw new Error("Target slot jābūt 1..9.");
-    }
-    if (!answer) throw new Error("Answer ir obligāts.");
-
-    const sortOrderRaw = String(f_sortOrder.value ?? "").trim();
-    const sortOrder = sortOrderRaw === "" ? 100 : Number(sortOrderRaw);
-    if (!Number.isFinite(sortOrder)) throw new Error("Sort order jābūt skaitlim.");
-
+  function readForm() {
     return {
-      title,
-      background: background || null,
-      targetSlot,
-      answer,
-      cardHtml: f_cardHtml.value ?? "",
-      hint1: f_hint1.value ?? "",
-      hint2: f_hint2.value ?? "",
-      hint3: f_hint3.value ?? "",
-      sortOrder,
+      id: f_id.value ? Number(f_id.value) : null,
+      title: f_title.value.trim(),
+      background: f_bg.value.trim() || null,
+      targetSlot: Number(f_slot.value),
+      sortOrder: Number(f_sort.value || 100),
+      answer: f_answer.value.trim(),
+      cardHtml: f_card.value || "",
+      hint1: f_hint1.value || null,
+      hint2: f_hint2.value || null,
+      hint3: f_hint3.value || null,
       active: !!f_active.checked,
     };
   }
 
   // ====== render list ======
-  function renderLevels(levels) {
+  function esc(s) {
+    return String(s || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function renderLevels(list) {
     if (!levelsList) return;
     levelsList.innerHTML = "";
 
-    if (!levels.length) {
-      levelsList.innerHTML = `<div class="muted">Nav līmeņu.</div>`;
-      return;
-    }
-
-    for (const lvl of levels) {
-      const badge = lvl.active
-        ? `<span class="badge badge-on">active</span>`
-        : `<span class="badge badge-off">off</span>`;
-
+    for (const l of list) {
       const row = document.createElement("div");
       row.className = "level-row";
+
+      const badge = l.active
+        ? `<span class="pill pill--green">active</span>`
+        : `<span class="pill pill--brown">off</span>`;
+
       row.innerHTML = `
-        <div class="level-meta">
-          <div class="name">
-            #${escapeHTML(lvl.id)} — ${escapeHTML(lvl.title)} ${badge}
+        <div class="level-row__left">
+          <div class="level-row__title">
+            <strong>#${esc(l.id)} — ${esc(l.title || "")}</strong>
+            ${badge}
           </div>
-          <div class="desc">
-            sort: ${escapeHTML(lvl.sortOrder)} · slot: ${escapeHTML(lvl.targetSlot)} · bg: ${escapeHTML(lvl.background || "—")}
+          <div class="level-row__meta muted">
+            sort: ${esc(l.sortOrder)} · slot: ${esc(l.targetSlot)} · bg: ${esc(
+        l.background || ""
+      )}
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button class="btn" type="button" data-edit-id="${escapeHTML(lvl.id)}">Edit</button>
-          <button class="btn-toggle" type="button" data-toggle-id="${escapeHTML(lvl.id)}" data-active="${lvl.active ? "1" : "0"}">
-            ${lvl.active ? "Izslēgt" : "Ieslēgt"}
+        <div class="level-row__right">
+          <button class="btn btn--ghost" data-edit-id="${esc(l.id)}">Edit</button>
+          <button class="btn" data-toggle-id="${esc(l.id)}">
+            ${l.active ? "Izslēgt" : "Ieslēgt"}
           </button>
         </div>
       `;
@@ -258,7 +207,11 @@
 
   async function loadLevels() {
     setStatus("Ielādēju līmeņus...");
-    const data = await apiJSON("/api/admin/levels");
+
+    const s = getSortState();
+    const url = `/api/admin/levels?order=${encodeURIComponent(s.order)}&dir=${encodeURIComponent(s.dir)}`;
+
+    const data = await apiJSON(url);
     levelsCache = data.levels || [];
     renderLevels(levelsCache);
     setStatus(`Līmeņi: ${levelsCache.length}`);
@@ -271,79 +224,100 @@
       const editBtn = e.target.closest("[data-edit-id]");
 
       if (toggleBtn) {
-        const id = Number(toggleBtn.dataset.toggleId);
-        const current = toggleBtn.dataset.active === "1";
-        const next = !current;
-
-        toggleBtn.disabled = true;
+        const id = Number(toggleBtn.getAttribute("data-toggle-id"));
         try {
-          await apiJSON(`/api/admin/levels/${id}`, {
-            method: "PUT",
-            body: JSON.stringify({ active: next }),
-          });
+          await apiJSON(`/api/admin/levels/${id}/toggle`, { method: "POST" });
           await loadLevels();
         } catch (err) {
-          alert(err.message || "Neizdevās pārslēgt active.");
-        } finally {
-          toggleBtn.disabled = false;
+          alert(err.message || "Neizdevās pārslēgt.");
         }
-        return;
       }
 
       if (editBtn) {
-        const id = Number(editBtn.dataset.editId);
-        const lvl = levelsCache.find((x) => Number(x.id) === id);
-        if (!lvl) return;
-        openModal("edit", lvl);
+        const id = Number(editBtn.getAttribute("data-edit-id"));
+        const level = levelsCache.find((x) => Number(x.id) === id);
+        if (!level) return;
+
+        modalTitle.textContent = `Edit #${id}`;
+        fillForm(level);
+        openModal();
       }
     });
   }
 
-  // ====== submit modal ======
+  // ====== events: modal close ======
+  if (levelModal) {
+    levelModal.addEventListener("click", (e) => {
+      if (e.target?.dataset?.close) closeModal();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+  }
+
+  // ====== add new ======
+  if (btnAdd) {
+    btnAdd.addEventListener("click", () => {
+      modalTitle.textContent = "Pievienot līmeni";
+      fillForm({
+        id: "",
+        title: "",
+        background: "bg/bg.jpg",
+        targetSlot: 1,
+        sortOrder: 100,
+        answer: "",
+        cardHtml: "",
+        hint1: "",
+        hint2: "",
+        hint3: "",
+        active: true,
+      });
+      openModal();
+    });
+  }
+
+  // ====== save ======
   if (levelForm) {
     levelForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      clearError();
+      const payload = readForm();
 
-      const btn = $("btnSaveLevel");
-      const prev = btn?.textContent || "Saglabāt";
-      if (btn) { btn.disabled = true; btn.textContent = "Saglabā..."; }
+      if (!payload.title || !payload.answer) {
+        alert("Nepietiek dati: title + answer ir obligāti.");
+        return;
+      }
 
       try {
-        const payload = buildPayload();
-        const id = f_id.value ? Number(f_id.value) : null;
-
-        if (!id) {
-          await apiJSON("/api/admin/levels", {
-            method: "POST",
+        if (payload.id) {
+          await apiJSON(`/api/admin/levels/${payload.id}`, {
+            method: "PUT",
             body: JSON.stringify(payload),
           });
         } else {
-          await apiJSON(`/api/admin/levels/${id}`, {
-            method: "PUT",
+          await apiJSON("/api/admin/levels", {
+            method: "POST",
             body: JSON.stringify(payload),
           });
         }
 
         closeModal();
         await loadLevels();
+        setStatus("Saglabāts.");
       } catch (err) {
-        showError(err.message || "Neizdevās saglabāt.");
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = prev; }
+        alert(err.message || "Saglabāšana neizdevās.");
       }
     });
   }
 
-  // ====== header buttons ======
-  if (btnAdd) btnAdd.addEventListener("click", () => openModal("add"));
-
+  // ====== import seed ======
   if (btnImportSeed) {
     btnImportSeed.addEventListener("click", async () => {
-      if (!confirm("Importēt līmeņus no seed? (Pievienos tikai trūkstošos)")) return;
+      if (!confirm("Importēt seed? (ja dublikāti, tie tiks izlaisti)")) return;
+
       try {
         setStatus("Importēju seed...");
-        const data = await apiJSON("/api/admin/import-seed", { method: "POST" });
+        const data = await apiJSON("/api/admin/levels/import-seed", { method: "POST" });
         setStatus(`Seed imports OK. Inserted: ${data?.summary?.inserted ?? 0}, skipped: ${data?.summary?.skipped ?? 0}`);
         await loadLevels();
       } catch (err) {
@@ -361,6 +335,21 @@
   }
 
   // ====== init ======
+  // init sorting UI
+  const s = getSortState();
+  if (sortBy) sortBy.value = s.order;
+  if (sortDir) sortDir.value = s.dir;
+
+  function onSortChange(){
+    const order = sortBy?.value || "sort";
+    const dir = sortDir?.value || "asc";
+    setSortState(order, dir);
+    loadLevels().catch(() => {});
+  }
+
+  if (sortBy) sortBy.addEventListener("change", onSortChange);
+  if (sortDir) sortDir.addEventListener("change", onSortChange);
+
   loadLevels().catch((e) => {
     console.error(e);
     setStatus("Neizdevās ielādēt līmeņus (pārbaudi atslēgu / token).");
