@@ -6,144 +6,24 @@
   <title>Disku spēle – Admin</title>
 
   <link rel="stylesheet" href="/admin/admin.css">
-
-  <style>
-    /* login-specifiski (maz, lai nav jāšķeļ vēl failos) */
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#0f1220;
-      color:#fff;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    .admin-card{
-      width:100%;
-      max-width:360px;
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.15);
-      border-radius:14px;
-      padding:24px;
-      box-shadow:0 20px 40px rgba(0,0,0,.4);
-    }
-    h1{
-      margin:0 0 16px;
-      font-size:20px;
-      text-align:center;
-    }
-    label{
-      display:block;
-      font-size:14px;
-      margin-bottom:6px;
-      opacity:.85;
-    }
-    input{
-      width:100%;
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.25);
-      background:rgba(0,0,0,.3);
-      color:#fff;
-      font-size:14px;
-      margin-bottom:14px;
-      outline:none;
-    }
-    input:focus{ border-color: rgba(77,163,255,0.9); }
-    button{
-      width:100%;
-      padding:10px 12px;
-      border-radius:10px;
-      border:none;
-      background:#4da3ff;
-      color:#081018;
-      font-size:15px;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .hint{
-      margin-top:14px;
-      font-size:12px;
-      opacity:.65;
-      text-align:center;
-      line-height:1.35;
-    }
-    .err{
-      margin-top:10px;
-      font-size:13px;
-      color:#ffb4b4;
-      font-weight:800;
-      min-height:1.2em;
-    }
-  </style>
 </head>
-<body>
+<body class="admin-login-page">
 
-  <div class="admin-card">
+  <div class="login-card">
     <h1>Admin panelis</h1>
 
-    <form id="loginForm">
+    <form id="loginForm" class="login-form">
       <label for="token">Admin atslēga</label>
       <input id="token" type="password" placeholder="Ievadi admin atslēgu" autocomplete="current-password" />
 
-      <button type="submit">Ienākt</button>
-      <div id="err" class="err"></div>
+      <button type="submit" class="btn primary">Ienākt</button>
     </form>
 
-    <div class="hint">
-      Ievadi atslēgu un turpināsi uz paneli.<br>
-      (Atslēga tiek glabāta tikai šajā pārlūkā – localStorage)
+    <div class="login-hint">
+      Ievadi atslēgu, lai piekļūtu /admin/panel
     </div>
   </div>
 
-  <script>
-    (function(){
-      const form = document.getElementById("loginForm");
-      const tokenEl = document.getElementById("token");
-      const err = document.getElementById("err");
-
-      // ja token jau ir, vari uzreiz iet uz paneli
-      const existing = localStorage.getItem("adminToken");
-      if (existing && existing.trim()) {
-        window.location.href = "/admin/panel";
-        return;
-      }
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        err.textContent = "";
-
-        const token = (tokenEl.value || "").trim();
-        if (!token) {
-          err.textContent = "Ievadi atslēgu.";
-          return;
-        }
-
-        // saglabājam
-        localStorage.setItem("adminToken", token);
-
-        // ātrs check (lai uzreiz redzi, vai atslēga pareiza)
-        try {
-          const res = await fetch("/api/admin/levels", {
-            headers: { "x-admin-token": token }
-          });
-          if (!res.ok) {
-            localStorage.removeItem("adminToken");
-            err.textContent = "Nepareiza atslēga (Unauthorized).";
-            return;
-          }
-        } catch (_) {
-          // ja serveris nestrādā — neatstājam tokenu
-          localStorage.removeItem("adminToken");
-          err.textContent = "Neizdevās pieslēgties serverim.";
-          return;
-        }
-
-        window.location.href = "/admin/panel";
-      });
-    })();
-  </script>
-
+  <script src="/admin/admin.js"></script>
 </body>
 </html>
