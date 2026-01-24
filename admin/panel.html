@@ -5,124 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Disku spēle – Admin panelis</title>
 
-  <style>
-    :root{
-      --bg:#0f1220;
-      --card:rgba(255,255,255,0.06);
-      --border:rgba(255,255,255,0.14);
-      --text:rgba(255,255,255,0.92);
-      --muted:rgba(255,255,255,0.68);
-    }
-    body{
-      margin:0;
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    header{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      padding:16px 18px;
-      border-bottom:1px solid var(--border);
-      background:rgba(0,0,0,0.18);
-      position:sticky;
-      top:0;
-      backdrop-filter: blur(8px);
-      z-index:10;
-    }
-    .title h1{ margin:0; font-size:18px; }
-    .sub{ font-size:12px; color:var(--muted); }
-
-    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
-    .btn{
-      padding:9px 12px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,0.04);
-      color:var(--text);
-      font-weight:600;
-      cursor:pointer;
-    }
-    .btn.primary{
-      background:#4da3ff;
-      border-color:transparent;
-      color:#081018;
-    }
-
-    .wrap{ max-width:980px; margin:0 auto; padding:18px; }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:16px;
-    }
-    .muted{ color:var(--muted); font-size:13px; }
-
-    .levels{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
-    .level-row{
-      display:flex; justify-content:space-between; align-items:center;
-      gap:12px; padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,0.12);
-      background:rgba(0,0,0,0.18);
-    }
-    .level-meta{ min-width:0; }
-    .level-meta .name{ font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .level-meta .desc{ font-size:12px; color:var(--muted); }
-
-    .badge{ font-size:11px; padding:2px 8px; border-radius:999px; margin-left:6px; border:1px solid var(--border); }
-    .badge-on{ background: rgba(0,200,100,0.18); }
-    .badge-off{ background: rgba(220,120,0,0.18); }
-
-    .btn-toggle{ border:1px solid var(--border); background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:10px; cursor:pointer; }
-
-    .status{ font-size:13px; color:var(--muted); margin-bottom:10px; }
-
-    /* ===== MODAL ===== */
-    .hidden{ display:none !important; }
-    .modal{ position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center; }
-    .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.6); }
-    .modal__card{
-      position:relative;
-      width:min(920px, 96vw);
-      max-height:90vh;
-      overflow:auto;
-      background:#0f1220;
-      border:1px solid var(--border);
-      border-radius:16px;
-    }
-    .modal__header, .modal__footer{
-      padding:14px 16px;
-      border-bottom:1px solid var(--border);
-      display:flex; justify-content:space-between; align-items:center;
-    }
-    .modal__footer{ border-top:1px solid var(--border); border-bottom:none; }
-    .modal__body{ padding:16px; }
-
-    .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
-    .field span{ font-size:12px; color:var(--muted); }
-    input, textarea{
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.18);
-      color:var(--text);
-      border-radius:10px;
-      padding:10px 12px;
-    }
-    textarea{ resize:vertical; }
-    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media(max-width:720px){ .grid2{ grid-template-columns:1fr; } }
-
-    .formError{
-      background:rgba(255,80,80,0.15);
-      border:1px solid rgba(255,80,80,0.4);
-      padding:10px 12px;
-      border-radius:10px;
-      font-size:13px;
-    }
-  </style>
+  <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>
@@ -132,24 +15,28 @@
     <h1>Admin panelis</h1>
     <div class="sub">Disku spēle · līmeņu pārvaldība</div>
   </div>
+
   <div class="actions">
-    <button id="btnImportSeed" class="btn">Importēt seed</button>
-    <button id="btnAdd" class="btn primary">+ Pievienot līmeni</button>
+    <button id="btnLogout" class="btn" type="button">Iziet</button>
+    <button id="btnImportSeed" class="btn" type="button">Importēt seed</button>
+    <button id="btnAdd" class="btn primary" type="button">+ Pievienot līmeni</button>
   </div>
 </header>
 
 <main class="wrap">
-  <div id="statusLine" class="status">—</div>
+  <div id="statusLine" class="status" aria-live="polite">—</div>
+
   <section class="card">
     <h2>Līmeņi</h2>
-    <div id="levelsList" class="levels"></div>
+    <div id="levelsList" class="levels" aria-label="Līmeņu saraksts"></div>
   </section>
 </main>
 
 <!-- ===== MODAL ===== -->
-<div id="levelModal" class="modal hidden">
+<div id="levelModal" class="modal hidden" aria-hidden="true">
   <div class="modal__backdrop" data-close></div>
-  <div class="modal__card">
+
+  <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="levelModalTitle">
     <form id="levelForm">
       <div class="modal__header">
         <h3 id="levelModalTitle">Līmenis</h3>
@@ -160,18 +47,56 @@
         <input type="hidden" id="levelId">
 
         <div class="grid2">
-          <label class="field"><span>Title</span><input id="f_title" required></label>
-          <label class="field"><span>Background</span><input id="f_background"></label>
-          <label class="field"><span>Target slot</span><input id="f_targetSlot" type="number" min="1" max="9"></label>
-          <label class="field"><span>Answer</span><input id="f_answer"></label>
-          <label class="field"><span>Sort order</span><input id="f_sortOrder" type="number"></label>
-          <label class="field"><span>Active</span><input id="f_active" type="checkbox"></label>
+          <label class="field">
+            <span>Title</span>
+            <input id="f_title" required>
+          </label>
+
+          <label class="field">
+            <span>Background</span>
+            <input id="f_background" placeholder="piem: bg/bg1.jpg">
+          </label>
+
+          <label class="field">
+            <span>Target slot (1..9)</span>
+            <input id="f_targetSlot" type="number" min="1" max="9" required>
+          </label>
+
+          <label class="field">
+            <span>Answer</span>
+            <input id="f_answer" required>
+          </label>
+
+          <label class="field">
+            <span>Sort order</span>
+            <input id="f_sortOrder" type="number" placeholder="piem: 100">
+          </label>
+
+          <label class="field checkboxRow">
+            <input id="f_active" type="checkbox">
+            <span>Active</span>
+          </label>
         </div>
 
-        <label class="field"><span>Card HTML</span><textarea id="f_cardHtml" rows="6"></textarea></label>
-        <label class="field"><span>Hint 1</span><textarea id="f_hint1"></textarea></label>
-        <label class="field"><span>Hint 2</span><textarea id="f_hint2"></textarea></label>
-        <label class="field"><span>Hint 3</span><textarea id="f_hint3"></textarea></label>
+        <label class="field">
+          <span>Card HTML</span>
+          <textarea id="f_cardHtml" rows="8" placeholder="<p>Teksts...</p>"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Hint 1</span>
+          <textarea id="f_hint1" rows="3"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Hint 2</span>
+          <textarea id="f_hint2" rows="3"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Hint 3</span>
+          <textarea id="f_hint3" rows="3"></textarea>
+        </label>
 
         <div id="levelFormError" class="formError hidden"></div>
       </div>
@@ -184,6 +109,6 @@
   </div>
 </div>
 
-<script src="admin.js"></script>
+<script src="admin.js" defer></script>
 </body>
 </html>
