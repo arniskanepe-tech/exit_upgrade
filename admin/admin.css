@@ -1,337 +1,276 @@
 :root{
-  --bg:#0f1220;
-  --card:rgba(255,255,255,0.06);
-  --border:rgba(255,255,255,0.14);
-  --text:rgba(255,255,255,0.92);
-  --muted:rgba(255,255,255,0.68);
-  --primary:#4da3ff;
+  --bg: #0f1218;
+  --card: rgba(255,255,255,0.05);
+  --stroke: rgba(255,255,255,0.08);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.65);
+  --pill: rgba(255,255,255,0.1);
+  --shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
 
 *{ box-sizing:border-box; }
-
-html,body{
-  height:100%;
+html,body{ height:100%; }
+body{
   margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: var(--bg);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: radial-gradient(1200px 600px at 10% 0%, rgba(70,120,255,0.12), transparent 60%),
+              radial-gradient(900px 500px at 90% 10%, rgba(255,120,70,0.10), transparent 55%),
+              var(--bg);
   color: var(--text);
 }
 
-/* =========================
-   Buttons / common
-   ========================= */
-.btn{
-  padding:9px 12px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,0.04);
-  color:var(--text);
-  font-weight:700;
-  cursor:pointer;
-}
-
-.btn.primary{
-  background:var(--primary);
-  border-color:transparent;
-  color:#081018;
-}
-
-.btn.ghost{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.14);
-  color: rgba(255,255,255,0.92);
-}
-
-.btn:disabled{
-  opacity:.65;
-  cursor:not-allowed;
-}
-
-/* =========================
-   Panel header / layout
-   ========================= */
-header{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
-  padding:16px 18px;
-  border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,0.18);
-  position:sticky;
-  top:0;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index:10;
-}
-
-.title{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.title h1{ margin:0; font-size:18px; }
-.sub{ font-size:12px; color:var(--muted); }
-
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
+a{ color: inherit; }
 
 .wrap{
-  max-width:980px;
-  margin:0 auto;
-  padding:18px;
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.muted{ color: var(--muted); }
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--stroke);
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+}
+
+.logo{
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-size: 18px;
+}
+
+.topbar__left .muted{
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.topbar__right{
+  display:flex;
+  gap:10px;
+  align-items:center;
 }
 
 .card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px;
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 18px 18px;
+  box-shadow: var(--shadow);
+  margin-top: 14px;
 }
 
-.muted{ color:var(--muted); font-size:13px; line-height:1.35; }
+h2{ margin: 0 0 10px; }
 
-.status{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:10px;
+.btn{
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .04s ease, background .2s ease, border-color .2s ease;
+}
+.btn:hover{
+  background: rgba(255,255,255,0.10);
+}
+.btn:active{
+  transform: translateY(1px);
 }
 
-/* =========================
-   Levels list
-   ========================= */
+.btn--primary{
+  background: rgba(80,140,255,0.25);
+  border-color: rgba(80,140,255,0.35);
+}
+.btn--primary:hover{ background: rgba(80,140,255,0.32); }
+
+.btn--ghost{
+  background: transparent;
+  border-color: rgba(255,255,255,0.12);
+}
+
 .levels{
   display:flex;
   flex-direction:column;
-  gap:10px;
-  margin-top:10px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .level-row{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.12);
+  border-radius: 14px;
+  padding: 14px 14px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(0,0,0,0.18);
+  gap: 12px;
 }
 
-.level-meta{
+.level-row__title{
   display:flex;
-  flex-direction:column;
-  gap:2px;
-  min-width:0;
-}
-
-.level-meta .name{
-  font-weight:800;
-  font-size:14px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.level-meta .desc{
-  font-size:12px;
-  color:var(--muted);
-}
-
-.badge{
-  display:inline-flex;
   align-items:center;
-  justify-content:center;
-  font-size:11px;
-  padding:2px 8px;
-  border-radius:999px;
-  margin-left:8px;
-  border:1px solid var(--border);
-  opacity:.95;
-  vertical-align:middle;
+  gap:10px;
 }
 
-.badge-on{ background: rgba(0,200,100,0.18); }
-.badge-off{ background: rgba(220,120,0,0.18); }
-
-.btn-toggle{
-  border:1px solid var(--border);
-  background:rgba(255,255,255,0.06);
-  color:var(--text);
-  padding:9px 12px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:700;
-  white-space:nowrap;
+.level-row__meta{
+  margin-top: 4px;
+  font-size: 13px;
 }
 
-/* =========================
-   Modal (Add/Edit)
-   ========================= */
-.hidden{ display:none !important; }
+.level-row__right{
+  display:flex;
+  gap: 10px;
+}
 
+.pill{
+  display:inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--pill);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.pill--green{
+  background: rgba(90,200,120,0.18);
+  border-color: rgba(90,200,120,0.30);
+}
+
+.pill--brown{
+  background: rgba(200,140,90,0.18);
+  border-color: rgba(200,140,90,0.30);
+}
+
+/* ================= MODAL ================= */
 .modal{
-  position:fixed;
-  inset:0;
-  z-index:999;
-  display:flex;
+  position: fixed;
+  inset: 0;
+  display:none;
   align-items:center;
   justify-content:center;
-  padding:18px;
+  padding: 20px;
+  z-index: 1000;
 }
+.modal.is-open{ display:flex; }
 
 .modal__backdrop{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.55);
 }
 
-.modal__card{
+.modal__dialog{
   position:relative;
-  width:min(920px, 100%);
-  max-height:calc(100vh - 60px);
-  overflow:auto;
-  background:rgba(15,18,32,0.98);
-  color: rgba(255,255,255,0.92);
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:16px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+  width: min(760px, 100%);
+  background: rgba(20,24,32,0.95);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
 }
 
-.modal__header{
+.modal__head{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap:12px;
-  padding:14px 16px;
-  border-bottom:1px solid rgba(255,255,255,0.14);
-  position:sticky;
-  top:0;
-  background:rgba(15,18,32,0.98);
-  z-index:2;
+  align-items:center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
 }
 
-.modal__body{ padding:16px; }
-
-.modal__footer{
+.form{
+  padding: 16px;
   display:flex;
-  justify-content:flex-end;
-  gap:10px;
-  padding:14px 16px;
-  border-top:1px solid rgba(255,255,255,0.14);
-  position:sticky;
-  bottom:0;
-  background:rgba(15,18,32,0.98);
+  flex-direction:column;
+  gap: 12px;
 }
 
 .field{
   display:flex;
   flex-direction:column;
-  gap:6px;
-  margin-bottom:12px;
+  gap: 6px;
 }
 
-.field > span{
-  font-size:12px;
-  color: rgba(255,255,255,0.68);
-  font-weight:800;
+.field__label{
+  font-size: 13px;
+  color: var(--muted);
 }
 
-input[type="text"], input[type="number"], input[type="password"], textarea{
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.16);
-  background:rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.92);
-  padding:10px 12px;
+input, textarea, select{
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  padding: 10px 12px;
   outline:none;
 }
 
-textarea{ resize:vertical; min-height:92px; }
+textarea{ resize: vertical; }
 
-.help{
-  font-size:12px;
-  color: rgba(255,255,255,0.68);
-  margin-top:2px;
-}
-
-.formError{
-  margin-top:12px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,80,80,0.35);
-  background: rgba(255,80,80,0.12);
-  color: rgba(255,255,255,0.92);
-  font-size:13px;
-}
-
-.grid2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-}
-
-@media (max-width: 740px){
-  .grid2{ grid-template-columns: 1fr; }
-}
-
-.checkboxRow{
+.row{
   display:flex;
-  flex-direction:row;
+  gap: 12px;
+}
+
+.row > .field{
+  flex: 1;
+}
+
+.check{
+  display:flex;
   align-items:center;
   gap:10px;
-  margin-top: 22px;
-  color: rgba(255,255,255,0.92);
-  font-weight: 800;
+  margin-top: 6px;
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top: 6px;
+}
+
+@media (max-width: 640px){
+  .topbar{ flex-direction:column; align-items:flex-start; gap: 10px; }
+  .topbar__right{ flex-wrap:wrap; }
+  .row{ flex-direction:column; }
+  .level-row{ flex-direction:column; align-items:flex-start; }
+  .level-row__right{ width:100%; justify-content:flex-end; }
 }
 
 /* =========================
-   Login page styles
+   Levels toolbar (sorting)
    ========================= */
-.admin-login-page{
+.levels-toolbar{
   display:flex;
   align-items:center;
-  justify-content:center;
-  padding:18px;
-}
-
-.login-card{
-  width:100%;
-  max-width:380px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:14px;
-  padding:24px;
-  box-shadow:0 20px 40px rgba(0,0,0,.4);
-}
-
-.login-card h1{
-  margin:0 0 16px;
-  font-size:20px;
-  text-align:center;
-}
-
-.login-form label{
-  display:block;
-  font-size:14px;
-  margin-bottom:6px;
-  color: rgba(255,255,255,0.85);
-}
-
-.login-form input{
-  width:100%;
-  margin-bottom:14px;
-}
-
-.login-hint{
+  gap:10px;
   margin-top:12px;
-  font-size:12px;
-  color: rgba(255,255,255,0.6);
-  text-align:center;
+  flex-wrap:wrap;
+}
+
+.levels-toolbar__control select{
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.16);
+  background:rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  padding:8px 10px;
+  outline:none;
+}
+
+.sr{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
 }
