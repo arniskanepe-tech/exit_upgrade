@@ -7,7 +7,8 @@
 // 3) Inicializē Postgres (migrācija + seed tikai, ja DB ir tukša)
 // 4) API spēlei:   GET  /api/levels/active
 // 5) API adminam:  GET  /api/admin/levels
-//                 PUT  /api/admin/levels/:id   (v1: tikai active)
+//                 POST /api/admin/levels          (create)
+//                 PUT  /api/admin/levels/:id      (toggle-only vai full update)
 // 6) Vienreizējs imports no seed: POST /api/admin/import-seed (drošs: transakcija, nepārraksta)
 // 7) Healthcheck:  GET  /health
 
@@ -27,7 +28,6 @@ async function runMigrations() {
 }
 
 // Seed tiek palaists tikai tad, ja levels tabula ir tukša.
-// (Railway DB parasti paliek dzīva starp deployiem.)
 async function seedIfEmpty() {
   const { rows } = await db.query("SELECT COUNT(*)::int AS count FROM levels");
   const count = rows?.[0]?.count ?? 0;
@@ -55,7 +55,7 @@ async function seedIfEmpty() {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
         lvl.title ?? "Uzdevums",
-        lvl.background ?? "bg.jpg",
+        lvl.background ?? "bg/bg.jpg",
         Number(lvl.targetSlot ?? 1),
         String(lvl.answer ?? ""),
         String(lvl.cardHtml ?? ""),
@@ -102,8 +102,7 @@ app.get("/health", (req, res) => {
 function requireAdmin(req, res, next) {
   const expected = process.env.ADMIN_TOKEN;
 
-  // Ja ADMIN_TOKEN nav uzstādīts -> dev režīms (atvērts),
-  // bet Railway vidē ieteicams uzlikt.
+  // Ja ADMIN_TOKEN nav uzstādīts -> dev režīms (atvērts)
   if (!expected) {
     console.warn("BRĪDINĀJUMS: ADMIN_TOKEN nav uzstādīts. Admin API ir atvērts (dev režīms).");
     return next();
@@ -116,13 +115,6 @@ function requireAdmin(req, res, next) {
 }
 
 // ================== ADMIN: IMPORT SEED (ONE-TIME) ==================
-// POST /api/admin/import-seed
-// - ielasa seed/levels.json
-// - pievieno DB trūkstošos līmeņus (droši: nepārraksta esošos)
-// - transakcija: vai nu ieliek visu, vai nevienu
-//
-// "Trūkstošo" noteikšana šobrīd: pēc (background + targetSlot + answer).
-// Ja vēlāk gribēsi 100% stabilu ID, varam pievienot DB laukam "slug" vai "external_id".
 app.post("/api/admin/import-seed", requireAdmin, async (req, res) => {
   let client;
   try {
@@ -134,7 +126,7 @@ app.post("/api/admin/import-seed", requireAdmin, async (req, res) => {
       return res.status(400).json({ ok: false, error: "seed/levels.json ir tukšs vai nav masīvs" });
     }
 
-    // Transakcija (vienā connection), lai imports ir drošs
+    // Transakcija
     client = await db.pool.connect();
     await client.query("BEGIN");
 
@@ -169,7 +161,7 @@ app.post("/api/admin/import-seed", requireAdmin, async (req, res) => {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
         [
           lvl.title ?? "Uzdevums",
-          lvl.background ?? "bg.jpg",
+          lvl.background ?? "bg/bg.jpg",
           Number(lvl.targetSlot ?? 1),
           String(lvl.answer ?? ""),
           String(lvl.cardHtml ?? ""),
@@ -230,7 +222,6 @@ app.get("/api/levels/active", async (req, res) => {
 });
 
 // ================== API (ADMIN) ==================
-// Atgriež VISUS līmeņus admin panelim (ar active + sortOrder)
 app.get("/api/admin/levels", requireAdmin, async (req, res) => {
   try {
     const { rows } = await db.query(
@@ -256,7 +247,78 @@ app.get("/api/admin/levels", requireAdmin, async (req, res) => {
   }
 });
 
-// Atjaunina līmeni (v1: tikai active ieslēgšana/izslēgšana)
+// CREATE level (admin)
+app.post("/api/admin/levels", requireAdmin, async (req, res) => {
+  try {
+    const {
+      title,
+      background,
+      targetSlot,
+      answer,
+      cardHtml,
+      hint1,
+      hint2,
+      hint3,
+      sortOrder,
+      active,
+    } = req.body || {};
+
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ ok: false, error: "title is required" });
+    }
+    const ts = Number(targetSlot);
+    if (!Number.isFinite(ts) || ts < 1 || ts > 9) {
+      return res.status(400).json({ ok: false, error: "targetSlot must be 1..9" });
+    }
+    if (answer === undefined || answer === null || String(answer).trim() === "") {
+      return res.status(400).json({ ok: false, error: "answer is required" });
+    }
+
+    const so = (sortOrder === "" || sortOrder === null || sortOrder === undefined)
+      ? 100
+      : Number(sortOrder);
+
+    if (!Number.isFinite(so)) {
+      return res.status(400).json({ ok: false, error: "sortOrder must be a number" });
+    }
+
+    const { rows } = await db.query(
+      `INSERT INTO levels
+       (title, background, target_slot, answer, card_html, hint1, hint2, hint3, active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING id,
+                 title,
+                 background,
+                 target_slot AS "targetSlot",
+                 answer,
+                 card_html AS "cardHtml",
+                 hint1, hint2, hint3,
+                 active,
+                 sort_order AS "sortOrder",
+                 created_at AS "createdAt",
+                 updated_at AS "updatedAt"`,
+      [
+        String(title),
+        background ?? null,
+        ts,
+        String(answer),
+        String(cardHtml ?? ""),
+        hint1 ?? null,
+        hint2 ?? null,
+        hint3 ?? null,
+        (active !== undefined ? !!active : true),
+        so,
+      ]
+    );
+
+    return res.json({ ok: true, level: rows[0] });
+  } catch (err) {
+    console.error("Kļūda POST /api/admin/levels:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// UPDATE level (toggle-only vai full update)
 app.put("/api/admin/levels/:id", requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -264,27 +326,112 @@ app.put("/api/admin/levels/:id", requireAdmin, async (req, res) => {
       return res.status(400).json({ ok: false, error: "Bad id" });
     }
 
-    const { active } = req.body || {};
-    if (typeof active !== "boolean") {
-      return res.status(400).json({ ok: false, error: "Body must contain boolean 'active'" });
+    const body = req.body || {};
+    const keys = Object.keys(body);
+
+    // v1 toggle režīms: tikai {active:boolean}
+    if (keys.length === 1 && keys[0] === "active") {
+      const { active } = body;
+      if (typeof active !== "boolean") {
+        return res.status(400).json({ ok: false, error: "Body must contain boolean 'active'" });
+      }
+
+      const { rows } = await db.query(
+        `UPDATE levels
+         SET active = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING id, active, updated_at AS "updatedAt"`,
+        [active, id]
+      );
+
+      if (rows.length === 0) {
+        return res.status(404).json({ ok: false, error: "Not found" });
+      }
+
+      return res.json({ ok: true, level: rows[0] });
+    }
+
+    // full update režīms
+    const {
+      title,
+      background,
+      targetSlot,
+      answer,
+      cardHtml,
+      hint1,
+      hint2,
+      hint3,
+      sortOrder,
+      active,
+    } = body;
+
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ ok: false, error: "title is required" });
+    }
+    const ts = Number(targetSlot);
+    if (!Number.isFinite(ts) || ts < 1 || ts > 9) {
+      return res.status(400).json({ ok: false, error: "targetSlot must be 1..9" });
+    }
+    if (answer === undefined || answer === null || String(answer).trim() === "") {
+      return res.status(400).json({ ok: false, error: "answer is required" });
+    }
+
+    const so = (sortOrder === "" || sortOrder === null || sortOrder === undefined)
+      ? 100
+      : Number(sortOrder);
+
+    if (!Number.isFinite(so)) {
+      return res.status(400).json({ ok: false, error: "sortOrder must be a number" });
     }
 
     const { rows } = await db.query(
-      `UPDATE levels
-       SET active = $1, updated_at = NOW()
-       WHERE id = $2
-       RETURNING id, active, updated_at AS "updatedAt"`,
-      [active, id]
+      `UPDATE levels SET
+         title = $1,
+         background = $2,
+         target_slot = $3,
+         answer = $4,
+         card_html = $5,
+         hint1 = $6,
+         hint2 = $7,
+         hint3 = $8,
+         active = $9,
+         sort_order = $10,
+         updated_at = NOW()
+       WHERE id = $11
+       RETURNING id,
+                 title,
+                 background,
+                 target_slot AS "targetSlot",
+                 answer,
+                 card_html AS "cardHtml",
+                 hint1, hint2, hint3,
+                 active,
+                 sort_order AS "sortOrder",
+                 created_at AS "createdAt",
+                 updated_at AS "updatedAt"`,
+      [
+        String(title),
+        background ?? null,
+        ts,
+        String(answer),
+        String(cardHtml ?? ""),
+        hint1 ?? null,
+        hint2 ?? null,
+        hint3 ?? null,
+        (active !== undefined ? !!active : true),
+        so,
+        id,
+      ]
     );
 
     if (rows.length === 0) {
       return res.status(404).json({ ok: false, error: "Not found" });
     }
 
-    res.json({ ok: true, level: rows[0] });
+    return res.json({ ok: true, level: rows[0] });
   } catch (err) {
     console.error("Kļūda PUT /api/admin/levels/:id:", err);
-    res.status(500).json({ ok: false, error: "Server error" });
+    return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
 
