@@ -150,17 +150,17 @@
       f_sortOrder.value = 100;
       f_active.checked = true;
     } else {
-      f_id.value = level.id ?? "";
-      f_title.value = level.title ?? "";
-      f_background.value = level.background ?? "";
-      f_targetSlot.value = Number(level.targetSlot ?? 1);
-      f_answer.value = level.answer ?? "";
-      f_cardHtml.value = level.cardHtml ?? "";
-      f_hint1.value = level.hint1 ?? "";
-      f_hint2.value = level.hint2 ?? "";
-      f_hint3.value = level.hint3 ?? "";
-      f_sortOrder.value = (level.sortOrder ?? 100);
-      f_active.checked = !!level.active;
+      f_id.value = level?.id ?? "";
+      f_title.value = level?.title ?? "";
+      f_background.value = level?.background ?? "";
+      f_targetSlot.value = Number(level?.targetSlot ?? 1);
+      f_answer.value = level?.answer ?? "";
+      f_cardHtml.value = level?.cardHtml ?? "";
+      f_hint1.value = level?.hint1 ?? "";
+      f_hint2.value = level?.hint2 ?? "";
+      f_hint3.value = level?.hint3 ?? "";
+      f_sortOrder.value = (level?.sortOrder ?? 100);
+      f_active.checked = !!level?.active;
     }
 
     levelModal.classList.remove("hidden");
@@ -175,14 +175,17 @@
 
   if (levelModal) {
     levelModal.addEventListener("click", (e) => {
-      const el = e.target;
-      if (el?.dataset?.close) closeModal();
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (!levelModal.classList.contains("hidden") && e.key === "Escape") closeModal();
+      const closeEl = e.target.closest("[data-close]");
+      if (!closeEl) return;
+      e.preventDefault();
+      closeModal();
     });
   }
+
+  window.addEventListener("keydown", (e) => {
+    if (!levelModal) return;
+    if (!levelModal.classList.contains("hidden") && e.key === "Escape") closeModal();
+  });
 
   // ====== collect payload ======
   function buildPayload() {
