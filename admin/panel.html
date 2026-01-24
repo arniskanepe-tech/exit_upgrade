@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Disku spēle – Admin panelis</title>
 
-  <link rel="stylesheet" href="admin.css">
+  <!-- Admin-only CSS -->
+  <link rel="stylesheet" href="/admin/admin.css">
 </head>
 
 <body>
@@ -15,28 +16,26 @@
     <h1>Admin panelis</h1>
     <div class="sub">Disku spēle · līmeņu pārvaldība</div>
   </div>
-
   <div class="actions">
-    <button id="btnLogout" class="btn" type="button">Iziet</button>
-    <button id="btnImportSeed" class="btn" type="button">Importēt seed</button>
-    <button id="btnAdd" class="btn primary" type="button">+ Pievienot līmeni</button>
+    <button id="btnImportSeed" class="btn">Importēt seed</button>
+    <button id="btnAdd" class="btn primary">+ Pievienot līmeni</button>
   </div>
 </header>
 
 <main class="wrap">
-  <div id="statusLine" class="status" aria-live="polite">—</div>
+  <div id="statusLine" class="status">—</div>
 
   <section class="card">
     <h2>Līmeņi</h2>
-    <div id="levelsList" class="levels" aria-label="Līmeņu saraksts"></div>
+    <div id="levelsList" class="levels"></div>
   </section>
 </main>
 
 <!-- ===== MODAL ===== -->
-<div id="levelModal" class="modal hidden" aria-hidden="true">
+<div id="levelModal" class="modal hidden">
   <div class="modal__backdrop" data-close></div>
 
-  <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="levelModalTitle">
+  <div class="modal__card">
     <form id="levelForm">
       <div class="modal__header">
         <h3 id="levelModalTitle">Līmenis</h3>
@@ -54,48 +53,48 @@
 
           <label class="field">
             <span>Background</span>
-            <input id="f_background" placeholder="piem: bg/bg1.jpg">
+            <input id="f_background" placeholder="bg/bg1.jpg">
           </label>
 
           <label class="field">
-            <span>Target slot (1..9)</span>
-            <input id="f_targetSlot" type="number" min="1" max="9" required>
+            <span>Target slot</span>
+            <input id="f_targetSlot" type="number" min="1" max="9">
           </label>
 
           <label class="field">
             <span>Answer</span>
-            <input id="f_answer" required>
+            <input id="f_answer">
           </label>
 
           <label class="field">
             <span>Sort order</span>
-            <input id="f_sortOrder" type="number" placeholder="piem: 100">
+            <input id="f_sortOrder" type="number">
           </label>
 
           <label class="field checkboxRow">
             <input id="f_active" type="checkbox">
-            <span>Active</span>
+            Active
           </label>
         </div>
 
         <label class="field">
           <span>Card HTML</span>
-          <textarea id="f_cardHtml" rows="8" placeholder="<p>Teksts...</p>"></textarea>
+          <textarea id="f_cardHtml" rows="6"></textarea>
         </label>
 
         <label class="field">
           <span>Hint 1</span>
-          <textarea id="f_hint1" rows="3"></textarea>
+          <textarea id="f_hint1"></textarea>
         </label>
 
         <label class="field">
           <span>Hint 2</span>
-          <textarea id="f_hint2" rows="3"></textarea>
+          <textarea id="f_hint2"></textarea>
         </label>
 
         <label class="field">
           <span>Hint 3</span>
-          <textarea id="f_hint3" rows="3"></textarea>
+          <textarea id="f_hint3"></textarea>
         </label>
 
         <div id="levelFormError" class="formError hidden"></div>
@@ -103,12 +102,14 @@
 
       <div class="modal__footer">
         <button type="button" class="btn" data-close>Atcelt</button>
-        <button id="btnSaveLevel" class="btn primary" type="submit">Saglabāt</button>
+        <button id="btnSaveLevel" class="btn primary" type="submit">
+          Saglabāt
+        </button>
       </div>
     </form>
   </div>
 </div>
 
-<script src="admin.js" defer></script>
+<script src="/admin/admin.js"></script>
 </body>
 </html>
